@@ -267,6 +267,22 @@ Usage:
 scripts/init_skill.py <skill-name> --path <output-directory>
 ```
 
+**IMPORTANT - Output Directory Selection:**
+
+Ask the user where to create the skill. Common patterns:
+
+1. **For ekstend marketplace plugins**: Use `plugins/<plugin-name>/skills/` where `<plugin-name>` matches `<skill-name>`. Example:
+
+   ```bash
+   scripts/init_skill.py mysql-cli --path plugins/mysql-cli/skills
+   ```
+
+   This creates `plugins/mysql-cli/skills/mysql-cli/SKILL.md`
+
+2. **For standalone skills**: Ask user for their preferred location (e.g., `~/.claude/skills/`, project directory, etc.)
+
+Do NOT use arbitrary paths like `.claude-plugin/skills/` without asking the user first.
+
 The script:
 
 - Creates the skill directory at the specified path
