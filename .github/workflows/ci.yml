@@ -104,4 +104,6 @@ jobs:
         run: pip install pre-commit
 
       - name: Run pre-commit
+        env:
+          UV_PROJECT_ENVIRONMENT: /tmp/.venv
         run: pre-commit run --all-files
