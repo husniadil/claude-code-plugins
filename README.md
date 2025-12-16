@@ -23,7 +23,7 @@ Sequential thinking CLI for multi-step problem solving. Use when breaking down c
 
 ```bash
 claude plugin marketplace add husniadil/ekstend
-claude plugin install ultrathink@husniadil/ekstend
+claude plugin install ultrathink@ekstend
 ```
 
 ### From Claude Code session (interactive)
@@ -37,7 +37,7 @@ claude plugin install ultrathink@husniadil/ekstend
 2. Install a plugin:
 
 ```
-/plugin install ultrathink@husniadil/ekstend
+/plugin install ultrathink@ekstend
 ```
 
 Or browse available plugins interactively with `/plugin` and select "Browse Plugins".
