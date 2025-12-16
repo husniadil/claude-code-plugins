@@ -78,7 +78,7 @@ module = ["typer.*", "pydantic.*", "pytest.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["test_*", "*_test"]
+module = ["test_ultrathink"]
 disallow_untyped_decorators = false
 
 [tool.pytest.ini_options]

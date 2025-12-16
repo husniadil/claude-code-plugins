@@ -26,7 +26,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install --system ruff==0.8.4 mypy typer pydantic
+          uv pip install --system ruff==0.8.4 mypy==1.18.2 typer pydantic
 
       - name: Run ruff lint
         run: ruff check .
