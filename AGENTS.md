@@ -135,7 +135,7 @@ uv run plugins/<plugin>/skills/<skill>/<script>.py --help
 For ultrathink specifically:
 
 ```bash
-uv run plugins/ultrathink/skills/ultrathink/ultrathink.py -t "Test thought" -n 3
+uv run plugins/ultrathink/skills/ultrathink/scripts/ultrathink.py -t "Test thought" -n 3
 ```
 
 ## Version Management

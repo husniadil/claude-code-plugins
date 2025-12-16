@@ -16,6 +16,7 @@
         "name": "Husni Adil Makmur",
         "email": "husni.adil@gmail.com"
       },
+      "license": "MIT",
       "source": "./plugins/ultrathink",
       "category": "development"
     },
