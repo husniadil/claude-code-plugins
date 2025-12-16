@@ -100,10 +100,17 @@ jobs:
         with:
           version: "latest"
 
-      - name: Install pre-commit
-        run: pip install pre-commit
+      - name: Install dependencies for pre-commit hooks
+        run: |
+          pip install pre-commit mypy typer pydantic pytest pytest-cov
 
       - name: Run pre-commit
         env:
-          UV_PROJECT_ENVIRONMENT: /tmp/.venv
+          SKIP: mypy,pytest
         run: pre-commit run --all-files
+
+      - name: Run mypy directly
+        run: mypy .
+
+      - name: Run pytest directly
+        run: pytest plugins/ --tb=short -q
