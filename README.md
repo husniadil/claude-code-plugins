@@ -71,6 +71,20 @@ Access SQLite databases via CLI for querying, schema exploration, and data manag
 
 [Learn more](./plugins/sqlite-db/README.md)
 
+### ideate
+
+Facilitation-first brainstorming skill that helps users unlock their own ideas through structured questioning and expansion techniques. Use when you need to brainstorm, generate ideas, or think through options.
+
+**Features:**
+
+- EECCA workflow: Extract, Expand, Challenge, Cluster, Action
+- AI as facilitator, not generator philosophy
+- Session persistence via markdown files
+- Technique deep-dives (SCAMPER, Six Thinking Hats)
+- Provocative questions library
+
+[Learn more](./plugins/ideate/README.md)
+
 ## Installation
 
 ### From terminal (non-interactive)
@@ -82,6 +96,7 @@ claude plugin install skill-creator@ekstend
 claude plugin install mysql-db@ekstend
 claude plugin install postgres-db@ekstend
 claude plugin install sqlite-db@ekstend
+claude plugin install ideate@ekstend
 ```
 
 ### From Claude Code session (interactive)
@@ -100,6 +115,7 @@ claude plugin install sqlite-db@ekstend
 /plugin install mysql-db@ekstend
 /plugin install postgres-db@ekstend
 /plugin install sqlite-db@ekstend
+/plugin install ideate@ekstend
 ```
 
 Or browse available plugins interactively with `/plugin` and select "Browse Plugins".

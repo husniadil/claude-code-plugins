@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "ekstend",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "A collection of plugins for Claude Code including sequential thinking tools.",
   "owner": {
     "name": "Husni Adil Makmur",
@@ -67,6 +67,18 @@
       "license": "MIT",
       "source": "./plugins/sqlite-db",
       "category": "database"
+    },
+    {
+      "name": "ideate",
+      "description": "Facilitation-first brainstorming skill that helps users unlock their own ideas through structured questioning and expansion techniques.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Husni Adil Makmur",
+        "email": "husni.adil@gmail.com"
+      },
+      "license": "MIT",
+      "source": "./plugins/ideate",
+      "category": "productivity"
     }
   ]
 }
