@@ -57,6 +57,20 @@ Access PostgreSQL databases via CLI for querying, schema exploration, and data m
 
 [Learn more](./plugins/postgres-db/README.md)
 
+### sqlite-db
+
+Access SQLite databases via CLI for querying, schema exploration, and data management. Use when working with SQLite databases to run queries, explore table structures, or manage data.
+
+**Features:**
+
+- File-based database access (no credentials needed)
+- Path from manual input or .env files
+- Safety confirmations for destructive operations
+- Backup/dump and CSV import support
+- Protected database warnings (system/browser DBs)
+
+[Learn more](./plugins/sqlite-db/README.md)
+
 ## Installation
 
 ### From terminal (non-interactive)
@@ -67,6 +81,7 @@ claude plugin install ultrathink@ekstend
 claude plugin install skill-creator@ekstend
 claude plugin install mysql-db@ekstend
 claude plugin install postgres-db@ekstend
+claude plugin install sqlite-db@ekstend
 ```
 
 ### From Claude Code session (interactive)
@@ -84,6 +99,7 @@ claude plugin install postgres-db@ekstend
 /plugin install skill-creator@ekstend
 /plugin install mysql-db@ekstend
 /plugin install postgres-db@ekstend
+/plugin install sqlite-db@ekstend
 ```
 
 Or browse available plugins interactively with `/plugin` and select "Browse Plugins".

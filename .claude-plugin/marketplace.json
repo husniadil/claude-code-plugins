@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "ekstend",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "A collection of plugins for Claude Code including sequential thinking tools.",
   "owner": {
     "name": "Husni Adil Makmur",
@@ -54,6 +54,18 @@
       },
       "license": "MIT",
       "source": "./plugins/postgres-db",
+      "category": "database"
+    },
+    {
+      "name": "sqlite-db",
+      "description": "Access SQLite databases via CLI for querying, schema exploration, and data management.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Husni Adil Makmur",
+        "email": "husni.adil@gmail.com"
+      },
+      "license": "MIT",
+      "source": "./plugins/sqlite-db",
       "category": "database"
     }
   ]
