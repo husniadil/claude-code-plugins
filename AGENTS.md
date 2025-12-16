@@ -30,6 +30,8 @@ plugins/
 - **skill-creator**: Guide for creating effective skills that extend Claude's capabilities with specialized knowledge, workflows, or tool integrations. Includes utility scripts for initializing, validating, and packaging skills. Licensed under Apache 2.0.
 - **mysql-db**: Access MySQL databases via CLI for querying, schema exploration, and data management. Pure instruction-based skill (no scripts).
 - **postgres-db**: Access PostgreSQL databases via CLI for querying, schema exploration, and data management. Pure instruction-based skill (no scripts).
+- **sqlite-db**: Access SQLite databases via CLI for querying, schema exploration, and data management. Pure instruction-based skill (no scripts).
+- **ideate**: Facilitation-first brainstorming skill that helps users unlock their own ideas through structured questioning (EECCA workflow) and expansion techniques. Pure instruction-based skill (no scripts).
 
 ## Development Guidelines
 
