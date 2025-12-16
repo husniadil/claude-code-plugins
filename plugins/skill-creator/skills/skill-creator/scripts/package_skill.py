@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# /// script
+# dependencies = ["pyyaml"]
+# ///
 """
 Skill Packager - Creates a distributable .skill file of a skill folder
 
