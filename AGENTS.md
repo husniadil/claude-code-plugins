@@ -13,12 +13,15 @@ This is a Claude Code plugins repository containing reusable plugins that extend
 plugins/
   <plugin-name>/
     .claude-plugin/plugin.json    # Plugin metadata
+    CLAUDE.md                     # Redirects to AGENTS.md
+    AGENTS.md                     # Plugin-specific instructions for AI agents
     README.md                     # Plugin documentation
     skills/                       # Skill definitions
       <skill-name>/
         SKILL.md                  # Skill instructions (frontmatter + markdown)
-        REFERENCE.md              # Detailed reference docs
-        *.py                      # Skill implementation
+        references/               # Detailed reference docs
+        scripts/                  # Python scripts
+        tests/                    # Unit tests (optional)
 ```
 
 ## Current Plugins
@@ -37,12 +40,15 @@ plugins/
      "name": "<plugin-name>",
      "description": "...",
      "version": "1.0.0",
-     "author": { "name": "...", "email": "..." }
+     "author": { "name": "...", "email": "..." },
+     "license": "MIT"
    }
    ```
-3. Add `README.md` for human documentation
-4. Create `skills/<skill-name>/SKILL.md` for Claude Code skill instructions
-5. Register in `.claude-plugin/marketplace.json` plugins array
+3. Add `CLAUDE.md` (redirects to AGENTS.md)
+4. Add `AGENTS.md` for plugin-specific AI agent instructions
+5. Add `README.md` for human documentation
+6. Create `skills/<skill-name>/SKILL.md` for Claude Code skill instructions
+7. Register in `.claude-plugin/marketplace.json` plugins array
 
 ### SKILL.md Format
 
@@ -129,7 +135,7 @@ uv run --with pre-commit pre-commit run prettier --all-files
 Run Python skills directly:
 
 ```bash
-uv run plugins/<plugin>/skills/<skill>/<script>.py --help
+uv run plugins/<plugin>/skills/<skill>/scripts/<script>.py --help
 ```
 
 For ultrathink specifically:
