@@ -1,0 +1,10 @@
+{
+  "name": "mysql-cli",
+  "description": "Access MySQL databases via CLI for querying, schema exploration, and data management",
+  "version": "1.0.0",
+  "author": {
+    "name": "Husni Adil Makmur",
+    "email": "husni.adil@gmail.com"
+  },
+  "license": "MIT"
+}

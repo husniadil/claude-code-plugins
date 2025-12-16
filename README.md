@@ -30,6 +30,19 @@ Guide for creating effective skills that extend Claude's capabilities with speci
 
 [Learn more](./plugins/skill-creator/README.md)
 
+### mysql-cli
+
+Access MySQL databases via CLI for querying, schema exploration, and data management. Use when working with MySQL databases to run queries, explore table structures, or manage data.
+
+**Features:**
+
+- Credential management (manual input or config files)
+- Safety confirmations for destructive operations
+- Schema exploration commands
+- Production database warnings
+
+[Learn more](./plugins/mysql-cli/README.md)
+
 ## Installation
 
 ### From terminal (non-interactive)
@@ -37,6 +50,8 @@ Guide for creating effective skills that extend Claude's capabilities with speci
 ```bash
 claude plugin marketplace add husniadil/ekstend
 claude plugin install ultrathink@ekstend
+claude plugin install skill-creator@ekstend
+claude plugin install mysql-cli@ekstend
 ```
 
 ### From Claude Code session (interactive)
@@ -51,6 +66,8 @@ claude plugin install ultrathink@ekstend
 
 ```
 /plugin install ultrathink@ekstend
+/plugin install skill-creator@ekstend
+/plugin install mysql-cli@ekstend
 ```
 
 Or browse available plugins interactively with `/plugin` and select "Browse Plugins".
