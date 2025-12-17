@@ -1,7 +1,7 @@
 {
   "name": "code-review",
-  "description": "Iterative PR code review skill with gap detection, user-controlled fixes, and review loops until clean",
-  "version": "1.0.0",
+  "description": "Iterative code review with gap detection and user-controlled fixes. Supports PR review (diff-based) and holistic codebase review.",
+  "version": "1.0.1",
   "author": {
     "name": "Husni Adil Makmur",
     "email": "husni.adil@gmail.com"

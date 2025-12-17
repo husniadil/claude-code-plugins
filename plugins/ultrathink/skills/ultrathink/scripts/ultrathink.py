@@ -27,7 +27,7 @@ from typing import Annotated, Any, Literal
 import typer
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-__version__ = "1.0.0"
+__version__ = "2.0.1"
 
 # =============================================================================
 # Models

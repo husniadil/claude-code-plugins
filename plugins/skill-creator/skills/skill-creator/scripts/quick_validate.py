@@ -43,6 +43,10 @@ def validate_skill(skill_path):
         return False, f"Invalid YAML in frontmatter: {e}"
 
     # Define allowed properties
+    # - name, description: Required fields
+    # - license: Optional license reference
+    # - allowed-tools: Optional list of tool restrictions for the skill
+    # - metadata: Optional arbitrary metadata for skill extensions
     ALLOWED_PROPERTIES = {"name", "description", "license", "allowed-tools", "metadata"}
 
     # Check for unexpected properties (excluding nested keys under metadata)

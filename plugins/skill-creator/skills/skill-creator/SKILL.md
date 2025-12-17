@@ -264,7 +264,7 @@ When creating a new skill from scratch, always run the `init_skill.py` script. T
 Usage:
 
 ```bash
-scripts/init_skill.py <skill-name> --path <output-directory>
+${CLAUDE_PLUGIN_ROOT}/skills/skill-creator/scripts/init_skill.py <skill-name> --path <output-directory>
 ```
 
 **IMPORTANT - Output Directory Selection:**
@@ -274,7 +274,7 @@ Ask the user where to create the skill. Common patterns:
 1. **For ekstend marketplace plugins**: Use `plugins/<plugin-name>/skills/` where `<plugin-name>` matches `<skill-name>`. Example:
 
    ```bash
-   scripts/init_skill.py mysql-db --path plugins/mysql-db/skills
+   ${CLAUDE_PLUGIN_ROOT}/skills/skill-creator/scripts/init_skill.py mysql-db --path plugins/mysql-db/skills
    ```
 
    This creates `plugins/mysql-db/skills/mysql-db/SKILL.md`
@@ -338,13 +338,13 @@ Write instructions for using the skill and its bundled resources.
 Once development of the skill is complete, it must be packaged into a distributable .skill file that gets shared with the user. The packaging process automatically validates the skill first to ensure it meets all requirements:
 
 ```bash
-scripts/package_skill.py <path/to/skill-folder>
+${CLAUDE_PLUGIN_ROOT}/skills/skill-creator/scripts/package_skill.py <path/to/skill-folder>
 ```
 
 Optional output directory specification:
 
 ```bash
-scripts/package_skill.py <path/to/skill-folder> ./dist
+${CLAUDE_PLUGIN_ROOT}/skills/skill-creator/scripts/package_skill.py <path/to/skill-folder> ./dist
 ```
 
 The packaging script will:

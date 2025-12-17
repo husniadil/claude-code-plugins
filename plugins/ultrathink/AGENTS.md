@@ -19,9 +19,9 @@ plugins/ultrathink/
     references/
       REFERENCE.md              # Complete CLI reference
     scripts/
-      ultrathink.py             # Main implementation (~940 lines)
+      ultrathink.py             # Main implementation (~980 lines)
     tests/
-      test_ultrathink.py        # Unit tests (130 tests, 97% coverage)
+      test_ultrathink.py        # Unit tests (134 tests, 97% coverage)
 ```
 
 ## Tech Stack

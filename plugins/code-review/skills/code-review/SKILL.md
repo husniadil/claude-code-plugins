@@ -264,6 +264,45 @@ For each gap found, note:
 
 See [references/gap-categories.md](references/gap-categories.md) for detailed definitions.
 
+#### 2f. Validate Gaps Before Presenting
+
+**CRITICAL**: Before presenting any gap to the user, you MUST validate it by reading the actual code.
+
+When using Task agents (Explore or general-purpose) to scan different parts of a codebase in parallel, agents may report false positives or misunderstand context. **Never trust agent claims blindly.**
+
+**Validation Process:**
+
+For each gap reported (by you or by a sub-agent):
+
+1. **Read the actual file** at the reported line number using the Read tool
+2. **Verify the issue exists** - confirm the code actually has the problem described
+3. **Check the context** - ensure the surrounding code doesn't already handle the case
+4. **Confirm line numbers** - agent-reported line numbers may be approximate or outdated
+
+**Discard gaps that:**
+
+- Reference files or lines that don't exist
+- Describe code that doesn't match reality when you read it
+- Are already handled by surrounding context the agent missed
+- Are duplicates of other gaps (same issue, different wording)
+
+**Example Validation:**
+
+```
+Agent reports: "[HIGH] src/auth.ts:45 - SQL injection in query"
+
+Validation steps:
+1. Read src/auth.ts lines 40-50
+2. Check: Is there actually a query at line 45?
+3. Check: Does it use string concatenation with user input?
+4. Check: Is it already using parameterized queries?
+
+If the code uses parameterized queries → DISCARD the gap
+If the code has injection vulnerability → KEEP the gap
+```
+
+Only present validated gaps to the user.
+
 ### Step 3: Present Gaps to User
 
 Use the `AskUserQuestion` tool to present gaps as a numbered list with selection options.
@@ -405,6 +444,7 @@ Changes made:
 3. **Over-fixing** - Only fix what user selected
 4. **Skipping re-review** - Always re-review after fixes
 5. **Silent fixes** - Always explain what was changed and why
+6. **Trusting agent claims blindly** - When using Task agents for parallel analysis, ALWAYS validate their reported gaps by reading the actual code before presenting to user. Agents can hallucinate issues or misunderstand context.
 
 ## Example Session
 
