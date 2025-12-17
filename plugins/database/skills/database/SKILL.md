@@ -1,6 +1,6 @@
 ---
 name: database
-description: ALWAYS USE THIS SKILL when user mentions ANY database-related keywords including "db", "database", "SQL", "query", "PostgreSQL", "Postgres", "psql", "MySQL", "SQLite", "Redis", "orders", "users", "tables", "records", "data", "cek data", "lihat data", "ambil data", "check data", "get data", "fetch", "select", "insert", "update", "delete". Also trigger on phrases like "cek order", "lihat user", "query table", "di db", "di database", "from database". This skill provides safe database access with mandatory schema exploration before queries. Supports MySQL, PostgreSQL, SQLite, and Redis via CLI.
+description: ALWAYS USE THIS SKILL when user mentions ANY database-related keywords including "db", "database", "SQL", "query", "PostgreSQL", "Postgres", "psql", "MySQL", "SQLite", "Redis", "orders", "users", "tables", "records", "data", "check data", "get data", "fetch data", "select", "insert", "update", "delete", "from database", "in database", "query table", "check records", "look up", "retrieve". This skill provides safe database access with mandatory schema exploration before queries. Supports MySQL, PostgreSQL, SQLite, and Redis via CLI.
 ---
 
 # Database CLI
