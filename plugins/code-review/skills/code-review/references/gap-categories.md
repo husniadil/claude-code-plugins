@@ -282,19 +282,20 @@ Inconsistencies with project conventions.
 
 ```javascript
 // Magic number
-if (retryCount > 3)
-  if (a) {
-    // Should be MAX_RETRIES
+if (retryCount > 3) {
+  // Should be MAX_RETRIES constant
+}
 
-    // Deep nesting
-    if (b) {
-      if (c) {
-        if (d) {
-          // Too deep
-        }
+// Deep nesting
+if (a) {
+  if (b) {
+    if (c) {
+      if (d) {
+        // Too deep - refactor to early returns or extract functions
       }
     }
   }
+}
 ```
 
 ## 8. Missing Tests

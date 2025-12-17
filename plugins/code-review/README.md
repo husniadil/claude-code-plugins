@@ -45,7 +45,7 @@ review the src/api directory
 1. **Determine Mode**: PR review vs holistic codebase review
 2. **Understand Business Context**: Read docs, understand feature intent
 3. **Gather Technical Context**: Check callers, dependencies, data flow
-4. **Identify Gaps**: Find issues across all 8 categories
+4. **Identify Gaps**: Find issues across all 9 categories
 5. **Present**: Shows numbered list of gaps with severity
 6. **Select**: You choose which gaps to fix (or skip)
 7. **Fix**: Claude fixes selected gaps
