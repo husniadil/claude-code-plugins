@@ -4,5 +4,5 @@ requires-python = ">=3.12"
 
 [[package]]
 name = "ekstend"
-version = "1.5.0"
+version = "1.7.0"
 source = { virtual = "." }

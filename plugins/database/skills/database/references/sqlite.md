@@ -1,11 +1,6 @@
----
-name: sqlite-db
-description: Use this skill when the user asks to connect to, query, access, or work with a SQLite database. Also use when the user mentions SQLite tables, schemas, or wants to run SQL queries on SQLite. IMPORTANT - Always ask user for the database file path first.
----
+# SQLite CLI Reference
 
-# SQLite CLI
-
-Access and manage SQLite databases using the `sqlite3` command-line client.
+SQLite-specific CLI instructions using the `sqlite3` command-line client.
 
 ## Prerequisites
 
@@ -19,25 +14,11 @@ If not installed, inform user to install it via their package manager (usually p
 
 ## Database Path Acquisition
 
-**CRITICAL: Always ask for the database file path before any operation.**
-
-When database access is needed, ask the user using AskUserQuestion:
-
-```
-How would you like to provide the SQLite database path?
-
-1. Enter the file path manually (e.g., ./data.db, /path/to/database.sqlite)
-2. Read from a file (provide path to .env or config file)
-3. Use in-memory database (:memory:)
-```
-
-### Option 1: Manual Input
+### Manual Input
 
 Ask for the database file path directly.
 
-### Option 2: Read from File
-
-Supported formats:
+### Read from File
 
 **.env file:**
 
@@ -86,8 +67,6 @@ ls -la DATABASE_PATH 2>&1
 
 ## Connection Test
 
-Before any operation, test the connection:
-
 ```bash
 sqlite3 DATABASE_PATH "SELECT 1" 2>&1
 ```
@@ -105,8 +84,6 @@ sqlite3 -header -column DATABASE_PATH "QUERY"
 Add `LIMIT 100` to large result sets by default.
 
 ### Write Operations (INSERT, UPDATE, DELETE)
-
-**ALWAYS require user confirmation before executing.**
 
 For UPDATE/DELETE, first show affected rows:
 
@@ -190,30 +167,7 @@ sqlite3 DATABASE_PATH "PRAGMA database_list"
 sqlite3 DATABASE_PATH "SELECT COUNT(*) FROM table_name"
 ```
 
-## Safety Rules
-
-### Destructive Operations - REQUIRE CONFIRMATION
-
-These operations MUST show a warning and require explicit user confirmation:
-
-| Operation              | Risk Level | Action Before Execute                     |
-| ---------------------- | ---------- | ----------------------------------------- |
-| `DROP TABLE`           | CRITICAL   | Show what will be dropped, require "yes"  |
-| `DROP INDEX/VIEW`      | HIGH       | Show what will be dropped, require "yes"  |
-| `DELETE` without WHERE | CRITICAL   | Refuse or require explicit confirmation   |
-| `UPDATE` without WHERE | CRITICAL   | Refuse or require explicit confirmation   |
-| `DELETE` with WHERE    | HIGH       | Show affected count, require confirmation |
-| `UPDATE` with WHERE    | HIGH       | Show affected count, require confirmation |
-| `ALTER TABLE`          | MEDIUM     | Describe changes, require confirmation    |
-| `VACUUM`               | LOW        | Inform user (compacts database)           |
-
-### File Safety
-
-- Verify database path before operations
-- Warn if creating a new database file
-- Don't modify system SQLite databases without explicit permission
-
-### Protected Database Warning
+## Protected Database Warning
 
 If database path matches these patterns, show warning and require confirmation:
 
@@ -231,7 +185,7 @@ If database path matches these patterns, show warning and require confirmation:
 **Example warning:**
 
 ```
-⚠️ WARNING: This appears to be a system/application database.
+WARNING: This appears to be a system/application database.
 Path: ~/Library/Application Support/Firefox/places.sqlite
 Modifying this database may cause application issues.
 Are you sure you want to proceed? (yes/no)
@@ -268,25 +222,6 @@ sqlite3 -line DATABASE_PATH "QUERY"
 ```bash
 sqlite3 -header -csv DATABASE_PATH "QUERY" > output.csv
 ```
-
-## Common Tasks
-
-| User Request               | Query/Command                                                    |
-| -------------------------- | ---------------------------------------------------------------- |
-| "Show all tables"          | `.tables` or `SELECT name FROM sqlite_master WHERE type='table'` |
-| "Describe users table"     | `PRAGMA table_info(users)`                                       |
-| "Find user by email"       | `SELECT * FROM users WHERE email LIKE '%pattern%' LIMIT 100`     |
-| "Count records"            | `SELECT COUNT(*) FROM table`                                     |
-| "Recent records"           | `SELECT * FROM table ORDER BY created_at DESC LIMIT 10`          |
-| "Show indexes"             | `.indexes` or `.indexes table_name`                              |
-| "Show create statement"    | `.schema table_name`                                             |
-| "Database file size"       | Use `ls -lh DATABASE_PATH` via bash                              |
-| "Check database integrity" | `PRAGMA integrity_check`                                         |
-| "List foreign keys"        | `PRAGMA foreign_key_list(table_name)`                            |
-| "Enable foreign keys"      | `PRAGMA foreign_keys = ON`                                       |
-| "Backup database"          | `.dump > backup.sql`                                             |
-| "Import CSV"               | `.mode csv` then `.import file.csv table`                        |
-| "Export to CSV"            | `-header -csv "SELECT ..." > output.csv`                         |
 
 ## Backup and Export
 
@@ -364,6 +299,25 @@ ATTACH DATABASE 'other.db' AS other;
 SELECT * FROM other.table_name;
 DETACH DATABASE other;
 ```
+
+## Common Tasks
+
+| User Request               | Query/Command                                                    |
+| -------------------------- | ---------------------------------------------------------------- |
+| "Show all tables"          | `.tables` or `SELECT name FROM sqlite_master WHERE type='table'` |
+| "Describe users table"     | `PRAGMA table_info(users)`                                       |
+| "Find user by email"       | `SELECT * FROM users WHERE email LIKE '%pattern%' LIMIT 100`     |
+| "Count records"            | `SELECT COUNT(*) FROM table`                                     |
+| "Recent records"           | `SELECT * FROM table ORDER BY created_at DESC LIMIT 10`          |
+| "Show indexes"             | `.indexes` or `.indexes table_name`                              |
+| "Show create statement"    | `.schema table_name`                                             |
+| "Database file size"       | Use `ls -lh DATABASE_PATH` via bash                              |
+| "Check database integrity" | `PRAGMA integrity_check`                                         |
+| "List foreign keys"        | `PRAGMA foreign_key_list(table_name)`                            |
+| "Enable foreign keys"      | `PRAGMA foreign_keys = ON`                                       |
+| "Backup database"          | `.dump > backup.sql`                                             |
+| "Import CSV"               | `.mode csv` then `.import file.csv table`                        |
+| "Export to CSV"            | `-header -csv "SELECT ..." > output.csv`                         |
 
 ## Error Handling
 

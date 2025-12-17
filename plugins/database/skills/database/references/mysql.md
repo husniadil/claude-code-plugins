@@ -1,11 +1,6 @@
----
-name: mysql-db
-description: Use this skill when the user asks to connect to, query, access, or work with a MySQL database. Also use when the user mentions MySQL tables, schemas, or wants to run SQL queries on MySQL. Supports credentials from user input or config files (.env, docker-compose.yml). IMPORTANT - Always ask user for credentials or credential file location first; never use shell environment variables without explicit user permission.
----
+# MySQL CLI Reference
 
-# MySQL CLI
-
-Access and manage MySQL databases using the `mysql` command-line client.
+MySQL-specific CLI instructions using the `mysql` command-line client.
 
 ## Prerequisites
 
@@ -19,18 +14,7 @@ If not installed, inform user to install it via their package manager.
 
 ## Credential Acquisition
 
-**CRITICAL: Never use environment variables from the shell without explicit user permission.**
-
-When credentials are needed, ask the user using AskUserQuestion:
-
-```
-How would you like to provide MySQL credentials?
-
-1. Enter credentials manually (host, user, password, database)
-2. Read from a file (provide path to .env, docker-compose.yml, or config file)
-```
-
-### Option 1: Manual Input
+### Manual Input
 
 Ask for each field:
 
@@ -40,9 +24,7 @@ Ask for each field:
 - Password
 - Database name
 
-### Option 2: Read from File
-
-Supported formats:
+### Read from File
 
 **.env file:**
 
@@ -77,8 +59,6 @@ After reading the file, confirm with user before connecting.
 
 ## Connection Test
 
-Before any operation, test the connection:
-
 ```bash
 mysql -h HOST -P PORT -u USER -pPASSWORD -e "SELECT 1" 2>&1
 ```
@@ -96,8 +76,6 @@ mysql -h HOST -P PORT -u USER -pPASSWORD DATABASE -e "QUERY" --table
 Add `LIMIT 100` to large result sets by default. Use `--batch` for CSV-like output.
 
 ### Write Operations (INSERT, UPDATE, DELETE)
-
-**ALWAYS require user confirmation before executing.**
 
 For UPDATE/DELETE, first show affected rows:
 
@@ -133,38 +111,6 @@ mysql ... DATABASE -e "DESCRIBE table_name"
 mysql ... DATABASE -e "SHOW CREATE TABLE table_name"
 ```
 
-## Safety Rules
-
-### Destructive Operations - REQUIRE CONFIRMATION
-
-These operations MUST show a warning and require explicit user confirmation:
-
-| Operation              | Risk Level | Action Before Execute                     |
-| ---------------------- | ---------- | ----------------------------------------- |
-| `DROP TABLE/DATABASE`  | CRITICAL   | Show what will be dropped, require "yes"  |
-| `TRUNCATE TABLE`       | CRITICAL   | Show row count, require "yes"             |
-| `DELETE` without WHERE | CRITICAL   | Refuse or require explicit confirmation   |
-| `UPDATE` without WHERE | CRITICAL   | Refuse or require explicit confirmation   |
-| `DELETE` with WHERE    | HIGH       | Show affected count, require confirmation |
-| `UPDATE` with WHERE    | HIGH       | Show affected count, require confirmation |
-| `ALTER TABLE`          | MEDIUM     | Describe changes, require confirmation    |
-
-### Password Security
-
-- NEVER echo password to terminal output
-- NEVER include password in error messages shown to user
-- NEVER print or show the full mysql command that contains passwords to the user
-- When executing mysql commands, do NOT display the command itself - only show the query results
-- Use `-p` flag (password prompted) or temporary config file if needed
-- Do not log queries containing passwords
-
-### Production Database Warning
-
-If host contains these patterns, show warning:
-
-- `prod`, `production`, `live`, `master`
-- Cloud database hostnames (RDS, Cloud SQL, etc.)
-
 ## Output Formatting
 
 ### Table format (default for readability)
@@ -173,7 +119,7 @@ If host contains these patterns, show warning:
 mysql ... -e "QUERY" --table
 ```
 
-### JSON format (for data processing)
+### Batch format (for data processing)
 
 ```bash
 mysql ... -e "QUERY" --batch --raw | column -t -s $'\t'
@@ -185,6 +131,38 @@ mysql ... -e "QUERY" --batch --raw | column -t -s $'\t'
 mysql ... -e "QUERY" --batch > output.csv
 ```
 
+## Backup and Export
+
+### Dump entire database
+
+```bash
+mysqldump -h HOST -P PORT -u USER -pPASSWORD DATABASE > backup.sql
+```
+
+### Dump specific table
+
+```bash
+mysqldump -h HOST -P PORT -u USER -pPASSWORD DATABASE table_name > table_backup.sql
+```
+
+### Dump schema only (no data)
+
+```bash
+mysqldump -h HOST -P PORT -u USER -pPASSWORD --no-data DATABASE > schema.sql
+```
+
+### Dump data only (no schema)
+
+```bash
+mysqldump -h HOST -P PORT -u USER -pPASSWORD --no-create-info DATABASE > data.sql
+```
+
+### Restore from dump
+
+```bash
+mysql -h HOST -P PORT -u USER -pPASSWORD DATABASE < backup.sql
+```
+
 ## Common Tasks
 
 | User Request           | Query                                                        |
@@ -194,6 +172,8 @@ mysql ... -e "QUERY" --batch > output.csv
 | "Find user by email"   | `SELECT * FROM users WHERE email LIKE '%pattern%' LIMIT 100` |
 | "Count records"        | `SELECT COUNT(*) FROM table`                                 |
 | "Recent records"       | `SELECT * FROM table ORDER BY created_at DESC LIMIT 10`      |
+| "Backup database"      | `mysqldump ... DATABASE > backup.sql`                        |
+| "Export to CSV"        | `mysql ... -e "SELECT ..." --batch > output.csv`             |
 
 ## Error Handling
 

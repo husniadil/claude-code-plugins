@@ -1,11 +1,6 @@
----
-name: postgres-db
-description: Use this skill when the user asks to connect to, query, access, or work with a PostgreSQL/Postgres database. Also use when the user mentions PostgreSQL tables, schemas, or wants to run SQL queries on Postgres. Supports credentials from user input or config files (.env, docker-compose.yml). IMPORTANT - Always ask user for credentials or credential file location first; never use shell environment variables without explicit user permission.
----
+# PostgreSQL CLI Reference
 
-# PostgreSQL CLI
-
-Access and manage PostgreSQL databases using the `psql` command-line client.
+PostgreSQL-specific CLI instructions using the `psql` command-line client.
 
 ## Prerequisites
 
@@ -19,18 +14,7 @@ If not installed, inform user to install it via their package manager.
 
 ## Credential Acquisition
 
-**CRITICAL: Never use environment variables from the shell without explicit user permission.**
-
-When credentials are needed, ask the user using AskUserQuestion:
-
-```
-How would you like to provide PostgreSQL credentials?
-
-1. Enter credentials manually (host, user, password, database)
-2. Read from a file (provide path to .env, docker-compose.yml, or config file)
-```
-
-### Option 1: Manual Input
+### Manual Input
 
 Ask for each field:
 
@@ -40,9 +24,7 @@ Ask for each field:
 - Password
 - Database name
 
-### Option 2: Read from File
-
-Supported formats:
+### Read from File
 
 **.env file:**
 
@@ -104,14 +86,15 @@ PGPASSWORD=PASSWORD PGSSLMODE=require psql -h HOST -p PORT -U USER -d DATABASE -
 ```
 
 SSL modes:
-| Mode | Description |
-|------|-------------|
-| `disable` | No SSL |
-| `allow` | Try non-SSL first, then SSL |
-| `prefer` | Try SSL first, then non-SSL (default) |
-| `require` | SSL required, no certificate verification |
-| `verify-ca` | SSL required, verify server certificate |
-| `verify-full` | SSL required, verify server certificate and hostname |
+
+| Mode          | Description                                    |
+| ------------- | ---------------------------------------------- |
+| `disable`     | No SSL                                         |
+| `allow`       | Try non-SSL first, then SSL                    |
+| `prefer`      | Try SSL first, then non-SSL (default)          |
+| `require`     | SSL required, no certificate verification      |
+| `verify-ca`   | SSL required, verify server certificate        |
+| `verify-full` | SSL required, verify server certificate + host |
 
 For cloud databases (RDS, Cloud SQL, Azure), typically use `require` or `verify-full`.
 
@@ -122,8 +105,6 @@ postgresql://user:password@host:port/database?sslmode=require
 ```
 
 ## Connection Test
-
-Before any operation, test the connection:
 
 ```bash
 PGPASSWORD=PASSWORD psql -h HOST -p PORT -U USER -d DATABASE -c "SELECT 1" 2>&1
@@ -142,8 +123,6 @@ PGPASSWORD=PASSWORD psql -h HOST -p PORT -U USER -d DATABASE -c "QUERY"
 Add `LIMIT 100` to large result sets by default. Use `--csv` for CSV output.
 
 ### Write Operations (INSERT, UPDATE, DELETE)
-
-**ALWAYS require user confirmation before executing.**
 
 For UPDATE/DELETE, first show affected rows:
 
@@ -227,38 +206,6 @@ PGPASSWORD=PASSWORD psql ... -c "\ds"
 PGPASSWORD=PASSWORD psql ... -c "\du"
 ```
 
-## Safety Rules
-
-### Destructive Operations - REQUIRE CONFIRMATION
-
-These operations MUST show a warning and require explicit user confirmation:
-
-| Operation              | Risk Level | Action Before Execute                     |
-| ---------------------- | ---------- | ----------------------------------------- |
-| `DROP TABLE/DATABASE`  | CRITICAL   | Show what will be dropped, require "yes"  |
-| `TRUNCATE TABLE`       | CRITICAL   | Show row count, require "yes"             |
-| `DELETE` without WHERE | CRITICAL   | Refuse or require explicit confirmation   |
-| `UPDATE` without WHERE | CRITICAL   | Refuse or require explicit confirmation   |
-| `DELETE` with WHERE    | HIGH       | Show affected count, require confirmation |
-| `UPDATE` with WHERE    | HIGH       | Show affected count, require confirmation |
-| `ALTER TABLE`          | MEDIUM     | Describe changes, require confirmation    |
-
-### Password Security
-
-- NEVER echo password to terminal output
-- NEVER include password in error messages shown to user
-- NEVER print or show the full psql command that contains passwords (including PGPASSWORD=...) to the user
-- When executing psql commands, do NOT display the command itself - only show the query results
-- Use `PGPASSWORD` env var (set inline for single command only)
-- Do not log queries containing passwords
-
-### Production Database Warning
-
-If host contains these patterns, show warning:
-
-- `prod`, `production`, `live`, `master`
-- Cloud database hostnames (RDS, Cloud SQL, Azure, etc.)
-
 ## Output Formatting
 
 ### Default format (aligned tables)
@@ -291,6 +238,50 @@ PGPASSWORD=PASSWORD psql ... --csv -c "QUERY" > output.csv
 PGPASSWORD=PASSWORD psql ... -x -c "QUERY"
 ```
 
+## Backup and Export
+
+### Dump entire database
+
+```bash
+PGPASSWORD=PASSWORD pg_dump -h HOST -p PORT -U USER -d DATABASE > backup.sql
+```
+
+### Dump specific table
+
+```bash
+PGPASSWORD=PASSWORD pg_dump -h HOST -p PORT -U USER -d DATABASE -t table_name > table_backup.sql
+```
+
+### Dump schema only (no data)
+
+```bash
+PGPASSWORD=PASSWORD pg_dump -h HOST -p PORT -U USER -d DATABASE --schema-only > schema.sql
+```
+
+### Dump data only (no schema)
+
+```bash
+PGPASSWORD=PASSWORD pg_dump -h HOST -p PORT -U USER -d DATABASE --data-only > data.sql
+```
+
+### Custom format (for pg_restore)
+
+```bash
+PGPASSWORD=PASSWORD pg_dump -h HOST -p PORT -U USER -d DATABASE -Fc > backup.dump
+```
+
+### Restore from SQL dump
+
+```bash
+PGPASSWORD=PASSWORD psql -h HOST -p PORT -U USER -d DATABASE < backup.sql
+```
+
+### Restore from custom format
+
+```bash
+PGPASSWORD=PASSWORD pg_restore -h HOST -p PORT -U USER -d DATABASE backup.dump
+```
+
 ## Common Tasks
 
 | User Request           | Query/Command                                                 |
@@ -310,6 +301,8 @@ PGPASSWORD=PASSWORD psql ... -x -c "QUERY"
 | "Show table size"      | `SELECT pg_size_pretty(pg_total_relation_size('table'))`      |
 | "Database size"        | `SELECT pg_size_pretty(pg_database_size(current_database()))` |
 | "Active connections"   | `SELECT * FROM pg_stat_activity`                              |
+| "Backup database"      | `pg_dump ... -d DATABASE > backup.sql`                        |
+| "Export to CSV"        | `psql ... --csv -c "SELECT ..." > output.csv`                 |
 
 ## Error Handling
 

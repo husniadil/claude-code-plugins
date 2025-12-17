@@ -30,46 +30,35 @@ Guide for creating effective skills that extend Claude's capabilities with speci
 
 [Learn more](./plugins/skill-creator/README.md)
 
-### mysql-db
+### database
 
-Access MySQL databases via CLI for querying, schema exploration, and data management. Use when working with MySQL databases to run queries, explore table structures, or manage data.
+Access MySQL, PostgreSQL, and SQLite databases via CLI for querying, schema exploration, and data management. Auto-detects database type from context (connection strings, file extensions, config patterns) or asks when unclear.
 
 **Features:**
 
-- Credential management (manual input or config files)
+- Multi-database support (MySQL, PostgreSQL, SQLite)
+- Auto-detection of database type from context
+- Credential management (manual input, .env, docker-compose.yml, connection strings)
 - Safety confirmations for destructive operations
 - Schema exploration commands
-- Production database warnings
+- Production/system database warnings
+- Credential protection (passwords never shown in output)
 
-[Learn more](./plugins/mysql-db/README.md)
+[Learn more](./plugins/database/README.md)
 
-### postgres-db
+### ideate
 
-Access PostgreSQL databases via CLI for querying, schema exploration, and data management. Use when working with PostgreSQL databases to run queries, explore table structures, or manage data.
-
-**Features:**
-
-- Credential management (manual input, config files, or .pgpass)
-- SSL/TLS connection support
-- Safety confirmations for destructive operations
-- Schema exploration with meta-commands
-- Production database warnings
-
-[Learn more](./plugins/postgres-db/README.md)
-
-### sqlite-db
-
-Access SQLite databases via CLI for querying, schema exploration, and data management. Use when working with SQLite databases to run queries, explore table structures, or manage data.
+Facilitation-first brainstorming skill that helps users unlock their own ideas through structured questioning and expansion techniques. Use when you need to brainstorm, generate ideas, or think through options.
 
 **Features:**
 
-- File-based database access (no credentials needed)
-- Path from manual input or .env files
-- Safety confirmations for destructive operations
-- Backup/dump and CSV import support
-- Protected database warnings (system/browser DBs)
+- EECCA workflow: Extract, Expand, Challenge, Cluster, Action
+- AI as facilitator, not generator philosophy
+- Session persistence via markdown files
+- Technique deep-dives (SCAMPER, Six Thinking Hats)
+- Provocative questions library
 
-[Learn more](./plugins/sqlite-db/README.md)
+[Learn more](./plugins/ideate/README.md)
 
 ### ideate
 
@@ -93,9 +82,7 @@ Facilitation-first brainstorming skill that helps users unlock their own ideas t
 claude plugin marketplace add husniadil/ekstend
 claude plugin install ultrathink@ekstend
 claude plugin install skill-creator@ekstend
-claude plugin install mysql-db@ekstend
-claude plugin install postgres-db@ekstend
-claude plugin install sqlite-db@ekstend
+claude plugin install database@ekstend
 claude plugin install ideate@ekstend
 ```
 
@@ -112,9 +99,7 @@ claude plugin install ideate@ekstend
 ```
 /plugin install ultrathink@ekstend
 /plugin install skill-creator@ekstend
-/plugin install mysql-db@ekstend
-/plugin install postgres-db@ekstend
-/plugin install sqlite-db@ekstend
+/plugin install database@ekstend
 /plugin install ideate@ekstend
 ```
 
