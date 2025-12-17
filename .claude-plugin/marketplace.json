@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "ekstend",
-  "version": "1.9.3",
+  "version": "1.10.0",
   "description": "A collection of plugins for Claude Code including sequential thinking tools.",
   "owner": {
     "name": "Husni Adil Makmur",
@@ -55,6 +55,18 @@
       "license": "MIT",
       "source": "./plugins/ideate",
       "category": "productivity"
+    },
+    {
+      "name": "code-review",
+      "description": "Iterative PR code review with gap detection and user-controlled fixes. Reviews diffs, identifies issues, and fixes them in cycles until clean.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Husni Adil Makmur",
+        "email": "husni.adil@gmail.com"
+      },
+      "license": "MIT",
+      "source": "./plugins/code-review",
+      "category": "development"
     }
   ]
 }

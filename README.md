@@ -60,19 +60,20 @@ Facilitation-first brainstorming skill that helps users unlock their own ideas t
 
 [Learn more](./plugins/ideate/README.md)
 
-### ideate
+### code-review
 
-Facilitation-first brainstorming skill that helps users unlock their own ideas through structured questioning and expansion techniques. Use when you need to brainstorm, generate ideas, or think through options.
+Iterative code review skill with gap detection and user-controlled fixes. Supports both PR review and holistic codebase review. Understands business logic and traces integrations end-to-end.
 
 **Features:**
 
-- EECCA workflow: Extract, Expand, Challenge, Cluster, Action
-- AI as facilitator, not generator philosophy
-- Session persistence via markdown files
-- Technique deep-dives (SCAMPER, Six Thinking Hats)
-- Provocative questions library
+- Two review modes: PR diff review and holistic codebase audit
+- Business logic awareness (understands domain rules, not just code)
+- End-to-end integration tracing (frontend → backend → database → external APIs)
+- 9 gap categories: Business Logic, Integration, Logic, Security, Performance, Error Handling, Style, Tests, Docs
+- Human-in-loop with AskUserQuestion for gap selection
+- Iterative loop: Review → Fix → Re-review until clean
 
-[Learn more](./plugins/ideate/README.md)
+[Learn more](./plugins/code-review/README.md)
 
 ## Installation
 
@@ -84,6 +85,7 @@ claude plugin install ultrathink@ekstend
 claude plugin install skill-creator@ekstend
 claude plugin install database@ekstend
 claude plugin install ideate@ekstend
+claude plugin install code-review@ekstend
 ```
 
 ### From Claude Code session (interactive)
@@ -101,6 +103,7 @@ claude plugin install ideate@ekstend
 /plugin install skill-creator@ekstend
 /plugin install database@ekstend
 /plugin install ideate@ekstend
+/plugin install code-review@ekstend
 ```
 
 Or browse available plugins interactively with `/plugin` and select "Browse Plugins".

@@ -1,0 +1,10 @@
+{
+  "name": "code-review",
+  "description": "Iterative PR code review skill with gap detection, user-controlled fixes, and review loops until clean",
+  "version": "1.0.0",
+  "author": {
+    "name": "Husni Adil Makmur",
+    "email": "husni.adil@gmail.com"
+  },
+  "license": "MIT"
+}
