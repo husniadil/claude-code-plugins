@@ -1,11 +1,11 @@
 ---
 name: database
-description: Use this skill when the user asks to connect to, query, access, or work with a database (MySQL, PostgreSQL/Postgres, or SQLite). Also use when the user mentions database tables, schemas, or wants to run SQL queries. Supports credentials from user input or config files (.env, docker-compose.yml). For MySQL and PostgreSQL - always ask user for credentials or credential file location first; never use shell environment variables without explicit user permission. For SQLite - always ask user for the database file path first.
+description: Use this skill when the user asks to connect to, query, access, or work with a database (MySQL, PostgreSQL/Postgres, SQLite, or Redis). Also use when the user mentions database tables, schemas, key-value stores, or wants to run SQL queries or Redis commands. Supports credentials from user input or config files (.env, docker-compose.yml). For MySQL, PostgreSQL, and Redis - always ask user for credentials or credential file location first; never use shell environment variables without explicit user permission. For SQLite - always ask user for the database file path first.
 ---
 
 # Database CLI
 
-Access and manage MySQL, PostgreSQL, and SQLite databases using their respective command-line clients.
+Access and manage MySQL, PostgreSQL, SQLite databases, and Redis key-value stores using their respective command-line clients.
 
 ## Database Type Detection
 
@@ -24,8 +24,13 @@ Determine the database type from context:
 | Config has `MYSQL_*` variables                 | MySQL         |
 | Config has `PG*` or `POSTGRES_*` variables     | PostgreSQL    |
 | Config has `SQLITE_*` or `DATABASE_PATH`       | SQLite        |
+| User says "Redis", "redis-cli"                 | Redis         |
+| Connection string starts with `redis://`       | Redis         |
+| Connection string starts with `rediss://`      | Redis         |
+| Config has `REDIS_*` variables                 | Redis         |
 | Port 3306 mentioned                            | MySQL         |
 | Port 5432 mentioned                            | PostgreSQL    |
+| Port 6379 mentioned                            | Redis         |
 
 If database type cannot be determined, ask using AskUserQuestion:
 
@@ -34,17 +39,19 @@ Which database are you working with?
 1. MySQL
 2. PostgreSQL
 3. SQLite
+4. Redis
 ```
 
 ## Prerequisites
 
 Verify the appropriate CLI is installed:
 
-| Database   | Command             |
-| ---------- | ------------------- |
-| MySQL      | `mysql --version`   |
-| PostgreSQL | `psql --version`    |
-| SQLite     | `sqlite3 --version` |
+| Database   | Command               |
+| ---------- | --------------------- |
+| MySQL      | `mysql --version`     |
+| PostgreSQL | `psql --version`      |
+| SQLite     | `sqlite3 --version`   |
+| Redis      | `redis-cli --version` |
 
 If CLI is not installed, offer to help install it:
 
@@ -68,6 +75,7 @@ Installation commands by OS:
 | MySQL      | `brew install mysql-client` | `sudo apt install mysql-client`      | `sudo pacman -S mysql`      |
 | PostgreSQL | `brew install libpq`        | `sudo apt install postgresql-client` | `sudo pacman -S postgresql` |
 | SQLite     | `brew install sqlite`       | `sudo apt install sqlite3`           | `sudo pacman -S sqlite`     |
+| Redis      | `brew install redis`        | `sudo apt install redis-tools`       | `sudo pacman -S redis`      |
 
 For macOS with Homebrew, after installing mysql-client or libpq, the user may need to add to PATH:
 
@@ -97,6 +105,14 @@ How would you like to provide the SQLite database path?
 3. Use in-memory database (:memory:)
 ```
 
+**For Redis:**
+
+```
+How would you like to provide Redis connection details?
+1. Enter connection details manually (host, port, password, database number)
+2. Read from a file (provide path to .env, docker-compose.yml, or config file)
+```
+
 After reading any config file, confirm with user before connecting.
 
 For detailed credential formats and CLI syntax, see the database-specific references:
@@ -104,6 +120,7 @@ For detailed credential formats and CLI syntax, see the database-specific refere
 - **MySQL**: See [references/mysql.md](references/mysql.md)
 - **PostgreSQL**: See [references/postgres.md](references/postgres.md)
 - **SQLite**: See [references/sqlite.md](references/sqlite.md)
+- **Redis**: See [references/redis.md](references/redis.md)
 
 ## Connection Test
 
@@ -121,7 +138,16 @@ Add `LIMIT 100` to large result sets by default unless user specifies otherwise.
 
 For UPDATE/DELETE, first show affected rows count, then ask: "This will affect X rows. Proceed? (yes/no)"
 
-## Schema Exploration
+## Redis Operations
+
+Redis uses commands, not SQL queries. See [references/redis.md](references/redis.md) for:
+
+- Key-value operations (GET, SET, DEL)
+- Data structure operations (lists, sets, hashes, sorted sets)
+- Key pattern exploration (SCAN, KEYS)
+- Official command reference: https://redis.io/docs/latest/commands/
+
+## Schema Exploration (SQL Databases)
 
 Common operations (see reference docs for exact syntax):
 
@@ -150,6 +176,19 @@ These operations MUST show a warning and require explicit user confirmation:
 | `ALTER TABLE`          | MEDIUM     | Describe changes, require confirmation    |
 | `VACUUM` (SQLite)      | LOW        | Inform user (compacts database)           |
 
+### Redis Destructive Operations - REQUIRE CONFIRMATION
+
+| Operation              | Risk Level | Action Before Execute                         |
+| ---------------------- | ---------- | --------------------------------------------- |
+| `FLUSHDB`              | CRITICAL   | Show database number, warn all keys deleted   |
+| `FLUSHALL`             | CRITICAL   | Warn ALL databases cleared, require "yes"     |
+| `DEL` with pattern     | CRITICAL   | Show matching key count first, require "yes"  |
+| `UNLINK` with pattern  | CRITICAL   | Show matching key count first, require "yes"  |
+| `KEYS *` on production | HIGH       | Warn about blocking, suggest SCAN instead     |
+| `CONFIG SET`           | HIGH       | Show what will change, require confirmation   |
+| `DEBUG *`              | CRITICAL   | Refuse unless explicit permission             |
+| `SHUTDOWN`             | CRITICAL   | Warn server will stop, require explicit "yes" |
+
 ### Password/Credential Security
 
 - NEVER echo password to terminal output
@@ -163,7 +202,7 @@ These operations MUST show a warning and require explicit user confirmation:
 Show warning if:
 
 - Host/path contains: `prod`, `production`, `live`, `master`
-- Cloud database hostnames (RDS, Cloud SQL, Azure)
+- Cloud database hostnames (RDS, Cloud SQL, Azure, Redis Cloud, ElastiCache)
 - System databases (browser DBs, `/Library/`, `/var/lib/`)
 
 ### SQLite File Safety
@@ -174,7 +213,7 @@ Show warning if:
 
 ## Common SQL Operations
 
-These work across all three databases:
+These work across MySQL, PostgreSQL, and SQLite (Redis uses commands, not SQL):
 
 ```sql
 -- List all records (with limit)
@@ -206,18 +245,21 @@ For detailed CLI commands, credential formats, and database-specific features:
 - **MySQL**: [references/mysql.md](references/mysql.md) - CLI syntax, credential formats, SHOW commands
 - **PostgreSQL**: [references/postgres.md](references/postgres.md) - psql meta-commands, SSL/TLS, pg_dump
 - **SQLite**: [references/sqlite.md](references/sqlite.md) - PRAGMA commands, backup/import, file formats
+- **Redis**: [references/redis.md](references/redis.md) - CLI syntax, key operations, data structures, SCAN patterns
 
 ## Error Handling
 
 Common errors across databases:
 
-| Error Type         | Likely Cause            | Suggestion                   |
-| ------------------ | ----------------------- | ---------------------------- |
-| Connection refused | Service not running     | Check if database is running |
-| Access denied      | Wrong credentials       | Verify username/password     |
-| Database not found | Wrong database name     | List available databases     |
-| Table not found    | Wrong table name        | List tables in database      |
-| Permission denied  | Insufficient privileges | Check user permissions       |
-| Syntax error       | Invalid SQL             | Check query syntax           |
+| Error Type         | Likely Cause            | Suggestion                       |
+| ------------------ | ----------------------- | -------------------------------- |
+| Connection refused | Service not running     | Check if database is running     |
+| Access denied      | Wrong credentials       | Verify username/password         |
+| Database not found | Wrong database name     | List available databases         |
+| Table not found    | Wrong table name        | List tables in database          |
+| Permission denied  | Insufficient privileges | Check user permissions           |
+| Syntax error       | Invalid SQL             | Check query syntax               |
+| NOAUTH (Redis)     | Redis requires password | Add `-a PASSWORD` flag           |
+| WRONGTYPE (Redis)  | Wrong Redis data type   | Check key type with TYPE command |
 
 See database-specific references for detailed error handling.

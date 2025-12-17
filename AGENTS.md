@@ -28,7 +28,7 @@ plugins/
 
 - **ultrathink**: Sequential thinking CLI for multi-step problem solving with confidence tracking and assumption management. Python-based, runs via `uv run`.
 - **skill-creator**: Guide for creating effective skills that extend Claude's capabilities with specialized knowledge, workflows, or tool integrations. Includes utility scripts for initializing, validating, and packaging skills. Licensed under Apache 2.0.
-- **database**: Unified access to MySQL, PostgreSQL, and SQLite databases via CLI for querying, schema exploration, and data management. Auto-detects database type from context. Pure instruction-based skill (no scripts).
+- **database**: Unified access to MySQL, PostgreSQL, SQLite databases, and Redis key-value stores via CLI for querying, schema/key exploration, and data management. Auto-detects database type from context. Pure instruction-based skill (no scripts).
 - **ideate**: Facilitation-first brainstorming skill that helps users unlock their own ideas through structured questioning (EECCA workflow) and expansion techniques. Pure instruction-based skill (no scripts).
 
 ## Development Guidelines

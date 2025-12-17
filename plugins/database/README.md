@@ -1,12 +1,12 @@
 # database
 
-A Claude Code plugin for accessing MySQL, PostgreSQL, and SQLite databases via CLI.
+A Claude Code plugin for accessing MySQL, PostgreSQL, SQLite databases, and Redis key-value stores via CLI.
 
 ## Features
 
-- **Multi-database support**: MySQL, PostgreSQL, SQLite
-- Query execution (SELECT, INSERT, UPDATE, DELETE)
-- Schema exploration (list tables, describe structure)
+- **Multi-database support**: MySQL, PostgreSQL, SQLite, Redis
+- Query execution (SQL queries for relational DBs, Redis commands for key-value)
+- Schema exploration (list tables, describe structure) / Key exploration (SCAN, patterns)
 - Credential management from user input or config files
 - Safety confirmations for destructive operations
 - Production/system database warnings
@@ -45,6 +45,14 @@ psql --version
 sqlite3 --version
 ```
 
+**Redis:**
+
+```bash
+brew install redis         # macOS (includes redis-cli)
+apt install redis-tools    # Ubuntu/Debian (CLI only)
+redis-cli --version
+```
+
 ## Usage
 
 Simply ask Claude to work with your database:
@@ -54,6 +62,9 @@ Simply ask Claude to work with your database:
 - "Open my SQLite database at ./app.db"
 - "Show all tables"
 - "Find records where status is active"
+- "Connect to my Redis instance"
+- "Get the value of user:123"
+- "Show all keys matching session:\*"
 
 Claude will detect the database type from context or ask you to specify.
 

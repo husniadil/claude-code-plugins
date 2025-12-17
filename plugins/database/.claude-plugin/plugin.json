@@ -1,7 +1,7 @@
 {
   "name": "database",
-  "description": "Access MySQL, PostgreSQL, and SQLite databases via CLI for querying, schema exploration, and data management.",
-  "version": "1.0.0",
+  "description": "Access MySQL, PostgreSQL, SQLite databases, and Redis key-value stores via CLI for querying, schema/key exploration, and data management.",
+  "version": "1.1.0",
   "author": {
     "name": "Husni Adil Makmur",
     "email": "husni.adil@gmail.com"

@@ -4,7 +4,7 @@ Instructions for AI coding agents working on the database plugin.
 
 ## Overview
 
-Database is a unified skill that enables Claude Code to access and manage MySQL, PostgreSQL, and SQLite databases using their respective command-line clients. It provides safe database operations with credential management and destructive operation protection.
+Database is a unified skill that enables Claude Code to access and manage MySQL, PostgreSQL, SQLite databases, and Redis key-value stores using their respective command-line clients. It provides safe database operations with credential management and destructive operation protection.
 
 **Plugin structure:**
 
@@ -20,11 +20,12 @@ plugins/database/
       mysql.md                  # MySQL-specific CLI instructions
       postgres.md               # PostgreSQL-specific CLI instructions
       sqlite.md                 # SQLite-specific CLI instructions
+      redis.md                  # Redis-specific CLI instructions
 ```
 
 ## Tech Stack
 
-- **Dependencies**: `mysql`, `psql`, `sqlite3` CLI clients (system)
+- **Dependencies**: `mysql`, `psql`, `sqlite3`, `redis-cli` CLI clients (system)
 - **No scripts**: Pure instruction-based skill
 
 ## Key Features
