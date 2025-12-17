@@ -1,6 +1,6 @@
 [project]
 name = "ekstend"
-version = "1.8.0"
+version = "1.9.0"
 description = "A collection of plugins for Claude Code"
 readme = "README.md"
 license = { text = "MIT" }

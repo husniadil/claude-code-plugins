@@ -1,11 +1,22 @@
 ---
 name: database
-description: Use this skill when the user asks to connect to, query, access, or work with a database (MySQL, PostgreSQL/Postgres, SQLite, or Redis). Also use when the user mentions database tables, schemas, key-value stores, or wants to run SQL queries or Redis commands. Supports credentials from user input or config files (.env, docker-compose.yml). For MySQL, PostgreSQL, and Redis - always ask user for credentials or credential file location first; never use shell environment variables without explicit user permission. For SQLite - always ask user for the database file path first.
+description: Use this skill when the user asks to connect to, query, access, check, look up, or work with a database (MySQL, PostgreSQL/Postgres, SQLite, or Redis). Also triggers on keywords like "db", "database", "SQL", "query", "records", "tables", "data lookup", or any data retrieval requests. Use when user mentions schemas, key-value stores, or wants to run SQL queries or Redis commands. Supports credentials from user input or config files (.env, docker-compose.yml). For MySQL, PostgreSQL, and Redis - always ask user for credentials or credential file location first; never use shell environment variables without explicit user permission. For SQLite - always ask user for the database file path first.
 ---
 
 # Database CLI
 
 Access and manage MySQL, PostgreSQL, SQLite databases, and Redis key-value stores using their respective command-line clients.
+
+## Critical Rules
+
+**NEVER** do the following:
+
+- **NEVER** guess or assume table names - always list tables first with `SHOW TABLES`, `\dt`, or `.tables`
+- **NEVER** guess or assume column names - always describe the table first with `DESCRIBE`, `\d`, or `PRAGMA table_info`
+- **NEVER** run SELECT queries on an unfamiliar database without exploring the schema first
+- **NEVER** assume ORM naming conventions (e.g., `Order` vs `orders`, `userId` vs `user_id`) - verify with schema
+
+**ALWAYS** follow the Query Workflow below when querying data the user asks for.
 
 ## Database Type Detection
 
@@ -125,6 +136,50 @@ For detailed credential formats and CLI syntax, see the database-specific refere
 ## Connection Test
 
 Before any operation, test the connection using the appropriate command from the reference docs.
+
+## Query Workflow (For Unfamiliar Databases)
+
+When user asks to query or check data, follow these steps **in order**:
+
+### Step 1: List Tables
+
+First, discover what tables exist:
+
+| Database   | Command                                                          |
+| ---------- | ---------------------------------------------------------------- |
+| MySQL      | `SHOW TABLES`                                                    |
+| PostgreSQL | `\dt` or `\dt *.*` (all schemas)                                 |
+| SQLite     | `.tables` or `SELECT name FROM sqlite_master WHERE type='table'` |
+
+### Step 2: Identify Target Table
+
+Match user's intent to actual table name:
+
+- User says "order" → look for `orders`, `order`, `Order`, `tbl_orders`, etc.
+- User says "user" → look for `users`, `user`, `accounts`, `members`, etc.
+- **Do NOT assume** - pick from the actual table list
+
+### Step 3: Describe Table Structure
+
+Get actual column names before querying:
+
+| Database   | Command                         |
+| ---------- | ------------------------------- |
+| MySQL      | `DESCRIBE table_name`           |
+| PostgreSQL | `\d table_name`                 |
+| SQLite     | `PRAGMA table_info(table_name)` |
+
+### Step 4: Build and Execute Query
+
+Now build the SELECT using **actual column names** from Step 3:
+
+```sql
+-- Use real columns, not guessed ones
+SELECT actual_col1, actual_col2, actual_col3
+FROM actual_table_name
+ORDER BY created_at DESC
+LIMIT 10;
+```
 
 ## Query Execution
 
