@@ -42,14 +42,26 @@ def validate_skill(skill_path):
     except yaml.YAMLError as e:
         return False, f"Invalid YAML in frontmatter: {e}"
 
-    # Define allowed properties
-    # - name, description: Required fields
-    # - license: Optional license reference
-    # - allowed-tools: Optional list of tool restrictions for the skill
-    # - metadata: Optional arbitrary metadata for skill extensions
-    ALLOWED_PROPERTIES = {"name", "description", "license", "allowed-tools", "metadata"}
+    # Allowed properties per Claude Code skill spec.
+    # See: https://code.claude.com/docs/en/skills
+    ALLOWED_PROPERTIES = {
+        "name",
+        "description",
+        "when_to_use",
+        "argument-hint",
+        "disable-model-invocation",
+        "user-invocable",
+        "allowed-tools",
+        "model",
+        "effort",
+        "context",
+        "agent",
+        "hooks",
+        "paths",
+        "shell",
+        "metadata",
+    }
 
-    # Check for unexpected properties (excluding nested keys under metadata)
     unexpected_keys = set(frontmatter.keys()) - ALLOWED_PROPERTIES
     if unexpected_keys:
         return False, (
@@ -57,9 +69,7 @@ def validate_skill(skill_path):
             f"Allowed properties are: {', '.join(sorted(ALLOWED_PROPERTIES))}"
         )
 
-    # Check required fields
-    if "name" not in frontmatter:
-        return False, "Missing 'name' in frontmatter"
+    # `name` is optional (defaults to directory name). `description` is recommended.
     if "description" not in frontmatter:
         return False, "Missing 'description' in frontmatter"
 
@@ -92,16 +102,20 @@ def validate_skill(skill_path):
     if not isinstance(description, str):
         return False, f"Description must be a string, got {type(description).__name__}"
     description = description.strip()
-    if description:
-        # Check for angle brackets
-        if "<" in description or ">" in description:
-            return False, "Description cannot contain angle brackets (< or >)"
-        # Check description length (max 1024 characters per spec)
-        if len(description) > 1024:
-            return (
-                False,
-                f"Description is too long ({len(description)} characters). Maximum is 1024 characters.",
-            )
+    if description and ("<" in description or ">" in description):
+        return False, "Description cannot contain angle brackets (< or >)"
+
+    when_to_use = frontmatter.get("when_to_use", "")
+    if not isinstance(when_to_use, str):
+        return False, f"when_to_use must be a string, got {type(when_to_use).__name__}"
+
+    # Combined description + when_to_use is capped at 1,536 chars per spec.
+    combined_len = len(description) + len(when_to_use.strip())
+    if combined_len > 1536:
+        return (
+            False,
+            f"Combined description + when_to_use is too long ({combined_len} characters). Maximum is 1,536 characters.",
+        )
 
     return True, "Skill is valid!"
 

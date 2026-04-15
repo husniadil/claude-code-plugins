@@ -1,6 +1,7 @@
 ---
 name: database
-description: ALWAYS USE THIS SKILL when user mentions ANY database-related keywords including "db", "database", "SQL", "query", "PostgreSQL", "Postgres", "psql", "MySQL", "SQLite", "Redis", "orders", "users", "tables", "records", "data", "check data", "get data", "fetch data", "select", "insert", "update", "delete", "from database", "in database", "query table", "check records", "look up", "retrieve". This skill provides safe database access with mandatory schema exploration before queries. Supports MySQL, PostgreSQL, SQLite, and Redis via CLI.
+description: Safe database access via CLI with mandatory schema exploration before queries. Supports MySQL, PostgreSQL, SQLite, and Redis.
+when_to_use: Use when inspecting, querying, or modifying data in a relational or key-value database.
 ---
 
 # Database CLI

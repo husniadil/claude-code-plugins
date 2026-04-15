@@ -83,6 +83,37 @@ jobs:
       - name: Run prettier check
         run: npx prettier@3.4.2 --check "**/*.{json,yaml,yml,md}"
 
+  skill-validate:
+    name: Skill frontmatter validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Validate every SKILL.md
+        run: |
+          set -e
+          fail=0
+          for skill_dir in plugins/*/skills/*/; do
+            printf '%-60s ' "$skill_dir"
+            if uv run --with pyyaml python plugins/skill-creator/skills/skill-creator/scripts/quick_validate.py "$skill_dir" 2>&1 | tail -1; then
+              :
+            else
+              fail=1
+            fi
+          done
+          exit $fail
+
   pre-commit:
     name: Pre-commit
     runs-on: ubuntu-latest

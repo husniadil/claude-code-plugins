@@ -1,7 +1,7 @@
 ---
 name: skill-creator
-description: Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.
-license: Complete terms in LICENSE.txt
+description: Guide for authoring effective skills that extend Claude's capabilities with specialized knowledge, workflows, or tool integrations.
+when_to_use: Use when creating a new skill or updating an existing one.
 ---
 
 # Skill Creator
@@ -51,9 +51,11 @@ Every skill consists of a required SKILL.md file and optional bundled resources:
 ```
 skill-name/
 ├── SKILL.md (required)
-│   ├── YAML frontmatter metadata (required)
-│   │   ├── name: (required)
-│   │   └── description: (required)
+│   ├── YAML frontmatter metadata
+│   │   ├── name: (optional, defaults to directory name)
+│   │   ├── description: (recommended)
+│   │   ├── when_to_use: (recommended)
+│   │   └── ...other optional fields (see "Optional Frontmatter Fields" below)
 │   └── Markdown instructions (required)
 └── Bundled Resources (optional)
     ├── scripts/          - Executable code (Python/Bash/etc.)
@@ -65,7 +67,7 @@ skill-name/
 
 Every SKILL.md consists of:
 
-- **Frontmatter** (YAML): Contains `name` and `description` fields. These are the only fields that Claude reads to determine when the skill gets used, thus it is very important to be clear and comprehensive in describing what the skill is, and when it should be used.
+- **Frontmatter** (YAML): `description` and `when_to_use` are the primary fields Claude reads to determine when the skill triggers, so make them clear and specific. Additional optional fields control invocation, tools, model, execution context, and more — see "Optional Frontmatter Fields" below.
 - **Body** (Markdown): Instructions and guidance for using the skill. Only loaded AFTER the skill triggers (if at all).
 
 #### Bundled Resources (optional)
@@ -115,8 +117,8 @@ The skill should only contain the information needed for an AI agent to do the j
 
 Skills use a three-level loading system to manage context efficiently:
 
-1. **Metadata (name + description)** - Always in context (~100 words)
-2. **SKILL.md body** - When skill triggers (<5k words)
+1. **Metadata (name + description + when_to_use)** - Always in context. The combined `description` and `when_to_use` text per skill is capped at 1,536 characters in the skill listing. The overall listing budget scales dynamically (~1% of the context window, fallback 8,000 characters).
+2. **SKILL.md body** - When skill triggers (<500 lines)
 3. **Bundled resources** - As needed by Claude (Unlimited because scripts can be executed without reading into context window)
 
 #### Progressive Disclosure Patterns
@@ -319,15 +321,50 @@ Any example files and directories not needed for the skill should be deleted. Th
 
 ##### Frontmatter
 
-Write the YAML frontmatter with `name` and `description`:
+Write the YAML frontmatter:
 
-- `name`: The skill name
-- `description`: This is the primary triggering mechanism for your skill, and helps Claude understand when to use the skill.
-  - Include both what the Skill does and specific triggers/contexts for when to use it.
-  - Include all "when to use" information here - Not in the body. The body is only loaded after triggering, so "When to Use This Skill" sections in the body are not helpful to Claude.
-  - Example description for a `docx` skill: "Comprehensive document creation, editing, and analysis with support for tracked changes, comments, formatting preservation, and text extraction. Use when Claude needs to work with professional documents (.docx files) for: (1) Creating new documents, (2) Modifying or editing content, (3) Working with tracked changes, (4) Adding comments, or any other document tasks"
+- `name` (optional): The skill name. Defaults to the directory name. Lowercase letters, numbers, hyphens only (max 64 chars).
+- `description` (recommended): What the Skill does. Front-load the key use case — combined with `when_to_use` it's capped at 1,536 characters in the listing.
+- `when_to_use` (recommended): Trigger context in natural language, starting with "Use when ...". Keep it generic, not POV-specific. Avoid keyword stuffing.
 
-Do not include any other fields in YAML frontmatter.
+Put triggering info in `description` + `when_to_use`, not in the body. The body only loads after the skill triggers, so "When to Use This Skill" sections in the body are not visible to Claude for routing decisions.
+
+Example:
+
+```yaml
+---
+name: docx
+description: Document creation, editing, and analysis with support for tracked changes, comments, formatting preservation, and text extraction.
+when_to_use: Use when working with professional documents (.docx files) — creating new documents, modifying content, handling tracked changes, or adding comments.
+---
+```
+
+##### Optional Frontmatter Fields
+
+Beyond `name`/`description`/`when_to_use`, skills support additional fields. Use them when the skill genuinely needs the capability:
+
+- `argument-hint`: Autocomplete hint for expected arguments, e.g. `[issue-number]`. Pair with `$ARGUMENTS`, `$ARGUMENTS[N]`, or `$N` in the body to consume them.
+- `disable-model-invocation`: `true` makes the skill user-invocable only (no automatic loading by Claude). Use for side-effectful workflows like `/commit` or `/deploy`.
+- `user-invocable`: `false` hides the skill from the `/` menu while keeping it available to Claude automatically. Use for background knowledge.
+- `allowed-tools`: Pre-approve tools while the skill is active (e.g. `Bash(git *)`). Does not restrict tools, only skips per-use prompts.
+- `model` / `effort`: Override the model or effort level (`low`/`medium`/`high`/`max`) for this skill.
+- `context: fork` + `agent`: Run the skill in an isolated subagent context using the specified agent type (`Explore`, `Plan`, `general-purpose`, or custom). Skill content becomes the subagent's prompt — only useful for skills with explicit task instructions.
+- `paths`: Glob patterns (comma-separated or YAML list) that scope automatic activation to matching files.
+- `hooks`: Lifecycle hooks scoped to this skill.
+- `shell`: `bash` (default) or `powershell` for inline shell command blocks.
+
+##### Dynamic Context Injection
+
+Inside the body, `` !`<command>` `` (inline) or a ` ```! ` fenced block (multi-line) runs shell commands _before_ the skill content is sent to Claude. The command output replaces the placeholder. Useful for injecting live data like `gh pr diff` or `git status`.
+
+##### String Substitutions
+
+Available in body content:
+
+- `$ARGUMENTS` — full argument string
+- `$ARGUMENTS[N]` / `$N` — positional argument (0-based, shell-style quoting)
+- `${CLAUDE_SESSION_ID}` — current session ID
+- `${CLAUDE_SKILL_DIR}` — directory containing this `SKILL.md` (use this to reference bundled scripts instead of relying on CWD)
 
 ##### Body
 

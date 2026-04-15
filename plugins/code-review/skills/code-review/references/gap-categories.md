@@ -112,7 +112,62 @@ const user = await db.query('SELECT email FROM users WHERE id = ?', [id])
 // BUG: Column renamed to 'email_address' in migration
 ```
 
-## 3. Logic Errors
+## 3. Dependency Compatibility
+
+Issues where code uses APIs, features, or behaviors that are incompatible with the exact versions resolved in the project's manifests and lockfiles.
+
+**Severity Guidelines:**
+
+- HIGH: Will fail at build/runtime (missing API in pinned version, CVE in pinned version, runtime version mismatch)
+- MED: Deprecated API still works but scheduled for removal; peer-dep mismatch without immediate breakage
+- LOW: Non-preferred but still-supported usage; outdated minor version
+
+**What to Look For:**
+
+- Usage of APIs not available in the pinned version (imported symbol exists only in newer releases)
+- Usage of APIs removed or renamed in the pinned version
+- Version bump without addressing documented breaking changes (release notes / migration guides)
+- Peer-dependency mismatch (e.g., `react` and `react-dom` out of sync; `@types/node` vs `node` runtime)
+- Runtime incompatibility (library requires Node 20 / Python 3.12 / JVM 21 but project pins older)
+- Pinned version with known CVE or security advisory
+- Using an API documented for version `vX` while the manifest pins `vY` where `Y ≠ X`
+- Transitive dependency conflicts surfaced by the lockfile
+
+**Grounding requirement**: Verify against the exact pinned version in the manifest/lockfile. Do not rely on latest-release knowledge. Use WebSearch + WebFetch against authoritative sources (npm, PyPI, crates.io, GitHub releases, official changelogs).
+
+**Examples:**
+
+```javascript
+// Node / TypeScript — using an API newer than the pinned version
+// package.json: "react": "^17.0.2"
+import { cache } from "react";
+// BUG: `cache()` was introduced in React 18.2 — will fail at build/runtime
+```
+
+```python
+# Python — using a method removed in the pinned version
+# pyproject.toml: pandas = "^1.5"
+df.append(other_df)
+# BUG: DataFrame.append was removed in pandas 2.0; flag as breaking-change risk on bump
+```
+
+```
+# Runtime mismatch
+# .nvmrc: 18 — CJS file uses top-level await
+# BUG: Node 18 + CJS doesn't support top-level await
+
+# Peer-dep mismatch
+# package.json: "react": "^18", "react-dom": "^17"
+# BUG: react-dom 17 does not support React 18 concurrent rendering
+
+# Pinned version with CVE
+# requirements.txt: requests==2.19.0
+# BUG: CVE-2018-18074 — upgrade to >=2.20.0 required
+```
+
+Flag these alongside the **Security** category when a CVE is involved.
+
+## 4. Logic Errors
 
 Issues with the correctness of code logic (technical bugs, not business rules).
 
@@ -145,7 +200,7 @@ if (user && user.isAdmin || user.isModerator) // Missing parentheses
 if (obj.property && obj) // Wrong order, will throw
 ```
 
-## 4. Security Issues
+## 5. Security Issues
 
 Vulnerabilities that could be exploited.
 
@@ -181,7 +236,7 @@ element.innerHTML = userInput;
 const API_KEY = "sk-1234567890";
 ```
 
-## 5. Performance Problems
+## 6. Performance Problems
 
 Code that will cause slowdowns or resource issues.
 
@@ -219,7 +274,7 @@ function Component({ items }) {
 }
 ```
 
-## 6. Error Handling
+## 7. Error Handling
 
 Missing or improper handling of error cases.
 
@@ -257,7 +312,7 @@ fetch("/api/data").then(handleData); // No .catch()
 const result = JSON.parse(input); // Can throw
 ```
 
-## 7. Code Style
+## 8. Code Style
 
 Inconsistencies with project conventions.
 
@@ -298,7 +353,7 @@ if (a) {
 }
 ```
 
-## 8. Missing Tests
+## 9. Missing Tests
 
 Code paths that should have test coverage.
 
@@ -331,7 +386,7 @@ export function calculateDiscount(price, couponCode) {
 // Test should be updated to cover new case
 ```
 
-## 9. Documentation Gaps
+## 10. Documentation Gaps
 
 Missing or outdated documentation for complex code.
 

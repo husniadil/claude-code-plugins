@@ -1,7 +1,7 @@
 ---
 name: interview
-description: Deep requirements gathering through thoughtful interviews. Use when users want to implement features, build systems, or tackle tasks that need thorough requirement discovery. Triggers on "/interview", "interview me about", "deep dive into requirements", "before we implement". Interviews users with non-obvious, probing questions until requirements are complete, then offers to enter plan mode.
-invocation: user
+description: Deep requirements gathering through probing questions that surface hidden requirements, edge cases, and trade-offs before implementation.
+when_to_use: Use when a feature, system, or task needs thorough requirement discovery prior to planning.
 ---
 
 # Interview
