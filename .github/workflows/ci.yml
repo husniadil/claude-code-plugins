@@ -102,15 +102,12 @@ jobs:
 
       - name: Validate every SKILL.md
         run: |
-          set -e
           fail=0
           for skill_dir in plugins/*/skills/*/; do
-            printf '%-60s ' "$skill_dir"
-            if uv run --with pyyaml python plugins/skill-creator/skills/skill-creator/scripts/quick_validate.py "$skill_dir" 2>&1 | tail -1; then
-              :
-            else
-              fail=1
-            fi
+            output=$(uv run --with pyyaml python plugins/skill-creator/skills/skill-creator/scripts/quick_validate.py "$skill_dir" 2>&1)
+            status=$?
+            printf '%-60s %s\n' "$skill_dir" "$(printf '%s\n' "$output" | tail -1)"
+            [ $status -eq 0 ] || fail=1
           done
           exit $fail
 

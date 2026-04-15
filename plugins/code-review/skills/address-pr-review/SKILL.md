@@ -70,15 +70,15 @@ Resolution rules:
 └──────────────┬───────────────────────┘
                ▼
 ┌──────────────────────────────────────┐
-│ 7. Reply to each comment              │
+│ 7. Push (commits live on origin)      │
 └──────────────┬───────────────────────┘
                ▼
 ┌──────────────────────────────────────┐
-│ 8. Resolve threads (batched)          │
+│ 8. Reply to each comment (cite SHA)   │
 └──────────────┬───────────────────────┘
                ▼
 ┌──────────────────────────────────────┐
-│ 9. Push                               │
+│ 9. Resolve threads (carve-out defer)  │
 └──────────────┬───────────────────────┘
                ▼
 ┌──────────────────────────────────────┐
@@ -110,7 +110,18 @@ Resolve PR:
 - Else infer from current branch: `PR=$(gh pr view --json number --jq '.number' 2>/dev/null)`.
 - If empty (not a PR branch) → ask the user for the PR number.
 
-### Step 2: Fetch unresolved review threads
+### Step 2: Fetch feedback (both review threads AND issue-level reviews)
+
+Reviewers land feedback on a PR through **two different channels**. The skill MUST check both — checking only one class silently misses entire reviews.
+
+| Channel                             | Posted as                                                                                          | Where it lives                                          | How to reply                                               | How to "resolve"                                                          |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **A. Line-anchored review threads** | GitHub Review with inline comments                                                                 | `reviewThreads` (GraphQL) / `pulls/:n/comments` (REST)  | `pulls/:n/comments` with `-f in_reply_to=<databaseId>`     | `resolveReviewThread` mutation with thread `id`                           |
+| **B. Issue-level PR comments**      | Single comment on the Conversation tab (bot summaries, `@claude` reviews, human free-form reviews) | `issueComments` (GraphQL) / `issues/:n/comments` (REST) | `issues/:n/comments` (new issue comment; no `in_reply_to`) | No resolve state — use a 👍 reaction or mention in PR description instead |
+
+**Always run Step 2a AND Step 2b.** A PR with zero `reviewThreads` is not necessarily "no review" — the reviewer may have posted a structured review as an issue-level comment.
+
+### Step 2a: Fetch unresolved review threads
 
 Use GraphQL in a single call to get both the GraphQL thread `id` (for resolving) and the REST `databaseId` (for replying):
 
@@ -134,9 +145,37 @@ Use GraphQL in a single call to get both the GraphQL thread `id` (for resolving)
 
 Execute via `gh api graphql -f query=...`.
 
-Filter threads to `isResolved == false`. If no unresolved threads remain, report "No unresolved review threads" and stop.
+Filter threads to `isResolved == false`. Whether or not any remain, continue to Step 2b — issue-level reviews can exist independently.
 
-**Why both IDs**: `databaseId` (integer) is used for REST `in_reply_to` replies (Step 7). `id` (GraphQL node ID) is used for `resolveReviewThread` (Step 8). Both come from the same query — no extra round trip.
+**Pagination note:** `reviewThreads(first: 50)` and `comments(first: 5)` will silently truncate large inputs. If `totalCount > 50` threads or `totalCount > 5` comments on any thread, re-run the query with a `pageInfo { endCursor hasNextPage }` selection and an `after:` argument to paginate until exhaustion. For most PRs the defaults are enough; for round-2 bot discussions or long human threads, paginate.
+
+**Why both IDs**: `databaseId` (integer) is used for REST `in_reply_to` replies (Step 8). `id` (GraphQL node ID) is used for `resolveReviewThread` (Step 9). Both come from the same query — no extra round trip.
+
+### Step 2b: Fetch issue-level PR comments (bot / human review summaries)
+
+```bash
+gh api repos/"$OWNER"/"$NAME"/issues/"$PR"/comments \
+  --jq '.[] | {id, user: .user.login, created_at, body}'
+```
+
+Scan each comment for review-style content. Signals that a comment is a review rather than casual chatter:
+
+- Author matches a known review bot: `claude[bot]`, `coderabbitai[bot]`, `deepsource-autofix[bot]`, `sonarqubecloud[bot]`, `sourcery-ai[bot]`, etc.
+- Body contains structured sections: `## Findings`, `### Critical`, severity emojis (🔴 🟠 🟡), `file:line` references, check-lists of tasks, or review verdict language ("Approve", "Request changes", "LGTM", "Blocking", "Nits")
+- Body references the PR's diff or cites specific files/lines from it
+
+For each matching comment, **parse findings out of the prose**. Each finding becomes one "virtual thread" in Step 4's table with:
+
+- `Thread`: the issue comment `id` (format it as `issue-<id>` to distinguish from review-thread `#R_...`)
+- `File:line`: extracted from the finding text
+- `Summary`: the finding description
+- `Severity`: inferred from headings/emojis or labelled explicitly
+
+**Replying to an issue-level review** is different from replying to a review thread:
+
+- You cannot use `in_reply_to` — issue comments do not thread.
+- Post **one consolidated reply** as a new issue comment that cites each finding and the fix SHA, rather than N per-finding replies. This avoids noise.
+- There is no thread to "resolve" — the review stays visible on the Conversation tab. If the bot re-reviews after your push, it will post a fresh comment.
 
 ### Step 3: Detect stack and dependency versions
 
@@ -175,12 +214,13 @@ For each unresolved review thread:
 
 **Subagent usage** (per Subagent Mode): for research-heavy validation (cross-repo pattern search, deep library source inspection, changelog reading), delegate to subagents where appropriate. Keep the actual `Read` to confirm the commented code in the main context.
 
-Present a summary table to the user:
+Present a summary table to the user. The `Thread` column identifies the source — `#R_xxx` for a review thread, `issue-<id>` for a finding parsed out of an issue-level review.
 
 ```
-| # | Thread | File:line | Severity | Summary | Classification | Proposed action |
-|---|--------|-----------|----------|---------|----------------|-----------------|
-| 1 | ...    | ...       | ...      | ...     | ...            | ...             |
+| # | Thread      | File:line | Severity | Summary | Classification | Proposed action |
+|---|-------------|-----------|----------|---------|----------------|-----------------|
+| 1 | #R_aaa      | ...       | ...      | ...     | ...            | ...             |
+| 2 | issue-1234  | ...       | ...      | ...     | ...            | ...             |
 ```
 
 ### Step 5: Present and ask
@@ -253,32 +293,69 @@ For threads classified **Valid** or **Partially valid** in the approved set.
 
    Never use `--no-verify`. Let hooks run. If a hook fails, fix the underlying issue, re-stage, create a **new** commit — do not `--amend` unless the user explicitly asks.
 
-### Step 7: Reply to each comment
+### Step 7: Push
 
-For every processed thread (including invalid/deferred/repeat), post a reply via REST using the **`databaseId`** captured in Step 2:
+```bash
+git push -u origin HEAD
+```
+
+`-u origin HEAD` avoids the "no upstream branch" error on first push. **Do not force push.** If push fails because of remote changes, pull/rebase first and reconcile — ask the user if conflicts arise.
+
+**Why push before reply?** Replies cite a commit SHA (`Fixed in abc1234`). If the SHA is not live on origin when the reviewer clicks it, GitHub returns 404. Always land the commit remotely before advertising it.
+
+### Step 8: Reply to each comment
+
+Branch on the thread source:
+
+**Review threads (`#R_xxx`)** — per-finding reply via REST, using the **`databaseId`** captured in Step 2a:
 
 ```bash
 gh api repos/"$OWNER"/"$NAME"/pulls/"$PR"/comments \
   -X POST \
-  -F in_reply_to="$DATABASE_ID" \
+  -f in_reply_to="$DATABASE_ID" \
   -f body="<reply>"
 ```
 
 **Reply templates** (keep concise, cite the commit where applicable):
 
-| Classification          | Reply                                                                                  |
-| ----------------------- | -------------------------------------------------------------------------------------- |
-| Valid + fixed           | `Valid. <brief explanation>. Fixed in <sha>.`                                          |
-| Partially valid + fixed | `Partially valid. <what was right, what was adjusted>. Fixed in <sha>.`                |
-| Invalid                 | `Invalid — <technical reasoning with evidence, cite file/line or version>.`            |
-| Acknowledged, defer     | `Acknowledged. Out of scope for this PR — <reason, link backlog/issue if applicable>.` |
-| Repeat                  | `Already addressed in this PR. See <Design Decisions section / prior thread>.`         |
+| Classification          | Reply                                                                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Valid + fixed           | `Valid. <brief explanation>. Fixed in <sha>.`                                                                                  |
+| Partially valid + fixed | `Partially valid. <what was right, what was adjusted>. Fixed in <sha>.`                                                        |
+| Invalid                 | `Invalid — <technical reasoning with evidence, cite file/line or version>.`                                                    |
+| Acknowledged, defer     | `Acknowledged. Out of scope for this PR — <reason, link backlog/issue if applicable>. Leaving this thread open for your call.` |
+| Repeat                  | `Already addressed in this PR. See <Design Decisions section / prior thread>.`                                                 |
 
-Never reply before the fix has been verified and committed (for valid cases) — the `sha` must be real.
+Never reply before the fix has been verified, committed, **and pushed** (for valid cases) — the `sha` must be live on origin.
 
-### Step 8: Resolve threads
+**Issue-level reviews (`issue-<id>`)** — post **one consolidated reply** as a new issue comment summarizing all findings from that review:
 
-Resolve every thread that was replied to, using the **GraphQL node `id`** from Step 2.
+```bash
+gh api repos/"$OWNER"/"$NAME"/issues/"$PR"/comments \
+  -X POST \
+  -f body="<consolidated reply>"
+```
+
+Recommended body structure:
+
+```
+Thanks for the review! Addressed as follows:
+
+- Finding 1 (<brief>): Valid. <fix>. Fixed in <sha>.
+- Finding 2 (<brief>): Partially valid. <adjustment>. Fixed in <sha>.
+- Finding 3 (<brief>): Invalid — <reasoning>.
+- Finding 4 (<brief>): Acknowledged, deferred — <reason>.
+```
+
+Do **not** try to use `in_reply_to` for an issue comment; that field is only valid for review-thread comments.
+
+### Step 9: Resolve threads
+
+Resolve threads that were **Valid**, **Partially valid**, **Invalid**, or **Repeat** — using the **GraphQL node `id`** from Step 2.
+
+**Do NOT resolve threads classified "Acknowledged, defer".** The reviewer left a valid-but-out-of-scope observation; auto-resolving their thread reads as dismissal. Leave it open so the reviewer can acknowledge themselves or convert it to a follow-up issue.
+
+**Issue-level reviews have no resolve state.** Skip this step for any `issue-<id>` entries — they don't live in `reviewThreads`. The consolidated reply from Step 8 is the resolution record.
 
 Batch into a single GraphQL mutation when possible using aliases:
 
@@ -299,14 +376,6 @@ mutation {
 ```
 
 Execute via `gh api graphql -f query=...`.
-
-### Step 9: Push
-
-```bash
-git push -u origin HEAD
-```
-
-`-u origin HEAD` avoids the "no upstream branch" error on first push. **Do not force push.** If push fails because of remote changes, pull/rebase first and reconcile — ask the user if conflicts arise.
 
 ### Step 10: Update PR description (optional)
 
@@ -333,6 +402,8 @@ Only update if there is new information not already captured. Do not rewrite sec
 9. **Amending someone else's commit** — create a new commit. Only amend your own HEAD and only when the user explicitly asks.
 10. **Auto-running the next round** — if the bot re-reviews after your push, this skill does not auto-handle the next round. Let the user re-invoke.
 11. **Paraphrasing AskUserQuestion as a prose question** — Step 5 presents choices via the AskUserQuestion tool. Invoke it verbatim so the structured panel renders. A natural-language question in chat is a bug, not an alternative.
+12. **Checking only review threads** — bots (Claude, CodeRabbit, DeepSource, etc.) and humans often post full reviews as a single **issue-level comment** on the Conversation tab. If Step 2a returns zero threads, Step 2b is still mandatory. Concluding "no review to address" based solely on `reviewThreads` is the exact bug this skill was built to prevent.
+13. **Replying to SHAs that aren't on origin yet** — push before reply. A reviewer clicking `abc1234` before the push completes sees a 404.
 
 ## Example Session
 
@@ -359,20 +430,27 @@ User: Apply all actions
 [TaskCreate × 2 (for threads 1 and 2 — thread 3 is Invalid, reply only)]
 
 [#1 in_progress → Read → Edit (parameterize query) → verify (re-read) → completed]
-[#2 in_progress → Read → Edit (throw after log) → verify → completed]
+[git add src/auth.ts; git commit -m "fix: address review comment on parameterized query
 
-[git add ...; git commit -m "fix: address review comments on auth and api"]
+Thread: #R_aaa
+Why: prevent SQL injection on user-provided id"]
+
+[#2 in_progress → Read → Edit (throw after log) → verify → completed]
+[git add src/api.ts; git commit -m "fix: address review comment on catch re-throw
+
+Thread: #R_bbb
+Why: preserve stack; logging alone swallowed the original error"]
+
+[git push -u origin HEAD]  ← push BEFORE reply so SHA is live
 
 [Reply to #1: "Valid. Switched to parameterized query. Fixed in abc1234."]
-[Reply to #2: "Partially valid. Re-throw after logging preserves the stack. Fixed in abc1234."]
+[Reply to #2: "Partially valid. Re-throw after logging preserves the stack. Fixed in def5678."]
 [Reply to #3: "Invalid — the helper name matches the domain term used in docs/GLOSSARY.md and other callers."]
 
 [Resolve threads #1, #2, #3 in one batched mutation]
 
-[git push -u origin HEAD]
-
 Claude: ## Done
-- 2 threads fixed (commit abc1234), 1 replied as invalid
+- 2 threads fixed (commits abc1234, def5678), 1 replied as invalid
 - All 3 threads resolved
 - Pushed to origin/<branch>
 ```
