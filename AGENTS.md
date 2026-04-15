@@ -30,7 +30,7 @@ plugins/
 - **skill-creator**: Guide for creating effective skills that extend Claude's capabilities with specialized knowledge, workflows, or tool integrations. Includes utility scripts for initializing, validating, and packaging skills. Licensed under Apache 2.0.
 - **database**: Unified access to MySQL, PostgreSQL, SQLite databases, and Redis key-value stores via CLI for querying, schema/key exploration, and data management. Auto-detects database type from context. Pure instruction-based skill (no scripts).
 - **ideate**: Facilitation-first brainstorming skill that helps users unlock their own ideas through structured questioning (EECCA workflow) and expansion techniques. Pure instruction-based skill (no scripts).
-- **code-review**: Iterative code review skill with gap detection and user-controlled fixes. Supports PR review and holistic codebase review. Understands business logic, traces integrations end-to-end (frontend → backend → database). 9 gap categories. Pure instruction-based skill (no scripts).
+- **code-review**: Iterative code-review toolkit bundling two skills. `code-review` itself finds gaps proactively (PR diff or holistic codebase), with business-logic awareness, end-to-end integration tracing (frontend → backend → database → external APIs), dependency grounding against pinned versions, and a tracked fix loop (TaskCreate/TaskUpdate). `address-pr-review` reacts to existing GitHub PR comments — validate (Valid / Partial / Invalid / Defer / Repeat), fix, reply, and resolve threads via `gh` GraphQL/REST. 10 gap categories. Pure instruction-based skills (no scripts).
 - **interview**: Deep requirements gathering skill that interviews users through thoughtful, in-depth questions before implementation. Uses CDEEPER workflow (Contextualize, Discover, Explore, Edge, Prioritize, Experience, Ready) to uncover hidden requirements, edge cases, and trade-offs. Pure instruction-based skill (no scripts).
 
 ## Development Guidelines
@@ -56,24 +56,23 @@ plugins/
 
 ### SKILL.md Format
 
-Skills use YAML frontmatter followed by markdown instructions:
+Skills use YAML frontmatter followed by markdown instructions. `description` and `when_to_use` are the primary triggering fields Claude reads — keep them in frontmatter, **not** in the body. Triggering info in body (e.g., a `## When to Use` section) is invisible to Claude for routing decisions.
 
 ```markdown
 ---
 name: skill-name
-description: When to use this skill (shown to Claude)
+description: What this skill does (front-load the key use case)
+when_to_use: Use when ... (natural language, generic — not POV-specific)
 ---
 
 # Skill Title
-
-## When to Use
-
-...
 
 ## Instructions
 
 ...
 ```
+
+Other optional frontmatter fields (consult `plugins/skill-creator/skills/skill-creator/SKILL.md` for the full list and validator rules): `argument-hint`, `disable-model-invocation`, `user-invocable`, `allowed-tools`, `model`, `effort`, `context`, `agent`, `paths`, `hooks`, `shell`. Combined `description` + `when_to_use` is capped at 1,536 characters in the listing.
 
 ### Code Style
 
@@ -149,6 +148,20 @@ uv run plugins/ultrathink/skills/ultrathink/scripts/ultrathink.py -t "Test thoug
 ```
 
 **For documentation-based skills** (like skill-creator), test by invoking the skill in Claude Code and verifying the guidance is correct.
+
+**For GitHub-integrated skills** (like `address-pr-review`), test against a real PR:
+
+1. Push a branch with code that draws bot comments (or leave review comments manually)
+2. Invoke `/address-pr-review <PR_NUMBER>`
+3. Verify: the AskUserQuestion panel renders, the summary table classifies each thread, the fix loop runs only for valid/partial, replies cite real commit SHAs, threads are resolved, no force push happens
+
+**Frontmatter validation** for any skill — run the validator before shipping:
+
+```bash
+uv run --with pyyaml python plugins/skill-creator/skills/skill-creator/scripts/quick_validate.py plugins/<plugin>/skills/<skill>/
+```
+
+CI runs this automatically (see `.github/workflows/ci.yml`).
 
 ## Version Management
 

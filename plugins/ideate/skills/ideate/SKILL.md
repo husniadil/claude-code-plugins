@@ -1,6 +1,7 @@
 ---
 name: ideate
-description: Facilitate brainstorming sessions as a thinking partner. Use when users want to brainstorm, generate ideas, explore possibilities, or need help thinking through options. This skill positions AI as a FACILITATOR that extracts and expands the user's own ideas rather than just generating ideas for them. Triggers on requests like "help me brainstorm", "I need ideas for", "let's think through", "what are my options for".
+description: Facilitate brainstorming as a thinking partner that extracts and expands latent ideas rather than generating them outright.
+when_to_use: Use when brainstorming, generating ideas, exploring possibilities, or working through options collaboratively.
 ---
 
 # Ideate

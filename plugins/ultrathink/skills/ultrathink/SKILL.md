@@ -1,6 +1,7 @@
 ---
 name: ultrathink
-description: Sequential thinking CLI for multi-step problem solving. Use when breaking down complex problems into steps, planning implementations, debugging multi-layered issues, or when explicit step-by-step reasoning with confidence tracking and assumption management is beneficial.
+description: Sequential thinking tool for multi-step problem solving with structured reasoning, confidence tracking, and assumption management.
+when_to_use: Use when breaking down complex problems into steps, planning implementations, debugging multi-layered issues, or when explicit step-by-step reasoning is beneficial.
 ---
 
 # UltraThink - Sequential Thinking CLI

@@ -62,16 +62,19 @@ Facilitation-first brainstorming skill that helps users unlock their own ideas t
 
 ### code-review
 
-Iterative code review skill with gap detection and user-controlled fixes. Supports both PR review and holistic codebase review. Understands business logic and traces integrations end-to-end.
+Iterative code-review toolkit bundling two composable skills: `code-review` (proactively find gaps in a PR diff or a whole codebase) and `address-pr-review` (react to existing GitHub PR comments — validate, fix, reply, and resolve threads).
 
 **Features:**
 
-- Two review modes: PR diff review and holistic codebase audit
+- Two review modes: PR diff review (auto-detects base branch via `gh` / `origin/HEAD`) and holistic codebase audit (ecosystem-aware source-root detection)
 - Business logic awareness (understands domain rules, not just code)
 - End-to-end integration tracing (frontend → backend → database → external APIs)
-- 9 gap categories: Business Logic, Integration, Logic, Security, Performance, Error Handling, Style, Tests, Docs
-- Human-in-loop with AskUserQuestion for gap selection
-- Iterative loop: Review → Fix → Re-review until clean
+- Dependency grounding against pinned versions (Node, Python, Go, Java, Kotlin, Rust, Ruby, PHP, Elixir)
+- 10 gap categories: Business Logic, Integration, Dependency Compatibility, Logic, Security, Performance, Error Handling, Style, Tests, Docs
+- Tracked fix loop via TaskCreate/TaskUpdate with explicit post-fix verification and Failure/Retry/Skip/Abort protocol
+- Human-gated loop: AskUserQuestion panel before every batch — fix menu, Next-Pass Gate, failure handling
+- `address-pr-review`: fetch unresolved threads via GraphQL, reply via REST (`databaseId`), resolve via batched mutation; never force-pushes
+- Subagent-aware: `subagent|no-subagent|auto` argument for both skills
 
 [Learn more](./plugins/code-review/README.md)
 

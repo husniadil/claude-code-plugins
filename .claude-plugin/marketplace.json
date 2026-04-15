@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "ekstend",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "A collection of plugins for Claude Code including sequential thinking tools.",
   "owner": {
     "name": "Husni Adil Makmur",
@@ -11,7 +11,7 @@
     {
       "name": "ultrathink",
       "description": "Sequential thinking CLI for multi-step problem solving with confidence tracking and assumption management.",
-      "version": "2.0.2",
+      "version": "2.0.3",
       "author": {
         "name": "Husni Adil Makmur",
         "email": "husni.adil@gmail.com"
@@ -23,7 +23,7 @@
     {
       "name": "skill-creator",
       "description": "Guide for creating effective skills that extend Claude's capabilities with specialized knowledge, workflows, or tool integrations.",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "author": {
         "name": "Anthropic",
         "url": "https://github.com/anthropics/skills"
@@ -35,7 +35,7 @@
     {
       "name": "database",
       "description": "Access MySQL, PostgreSQL, SQLite databases, and Redis key-value stores via CLI for querying, schema/key exploration, and data management.",
-      "version": "1.2.2",
+      "version": "1.2.3",
       "author": {
         "name": "Husni Adil Makmur",
         "email": "husni.adil@gmail.com"
@@ -47,7 +47,7 @@
     {
       "name": "ideate",
       "description": "Facilitation-first brainstorming skill that helps users unlock their own ideas through structured questioning and expansion techniques.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Husni Adil Makmur",
         "email": "husni.adil@gmail.com"
@@ -58,8 +58,8 @@
     },
     {
       "name": "code-review",
-      "description": "Iterative code review with gap detection and user-controlled fixes. Supports PR review (diff-based) and holistic codebase review. Reviews code, identifies issues, and fixes them in cycles until clean.",
-      "version": "1.0.1",
+      "description": "Iterative code review toolkit. Bundles two skills: code-review (diff-based PR review or holistic codebase audit with gap detection and tracked fix loop) and address-pr-review (validate GitHub PR comments, fix, reply, and resolve threads).",
+      "version": "1.1.0",
       "author": {
         "name": "Husni Adil Makmur",
         "email": "husni.adil@gmail.com"
@@ -71,7 +71,7 @@
     {
       "name": "interview",
       "description": "Deep requirements gathering skill that interviews users through thoughtful, in-depth questions before implementation. Uncovers hidden requirements, edge cases, and trade-offs.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Husni Adil Makmur",
         "email": "husni.adil@gmail.com"

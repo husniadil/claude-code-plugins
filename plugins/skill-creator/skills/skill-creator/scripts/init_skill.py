@@ -16,7 +16,8 @@ from pathlib import Path
 
 SKILL_TEMPLATE = """---
 name: {skill_name}
-description: [TODO: Complete and informative explanation of what the skill does and when to use it. Include WHEN to use this skill - specific scenarios, file types, or tasks that trigger it.]
+description: "TODO — Concise explanation of what this skill does. Front-load the key use case."
+when_to_use: "Use when TODO — describe the trigger context in natural language (specific scenarios, file types, or tasks)."
 ---
 
 # {skill_title}
@@ -276,7 +277,7 @@ def main():
         print("\nSkill name requirements:")
         print("  - Hyphen-case identifier (e.g., 'data-analyzer')")
         print("  - Lowercase letters, digits, and hyphens only")
-        print("  - Max 40 characters")
+        print("  - Max 64 characters")
         print("  - Must match directory name exactly")
         print("\nExamples:")
         print("  init_skill.py my-new-skill --path skills/public")
